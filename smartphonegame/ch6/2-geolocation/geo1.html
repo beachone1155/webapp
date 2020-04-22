@@ -1,0 +1,23 @@
+<!DOCTYPE html><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<div id="info"></div>
+<script type="text/javascript">
+// (1)位置情報の取得に成功したときのコールバック関数
+function successCallback (pos) {
+  var lat = pos.coords.latitude;
+  var lng = pos.coords.longitude;
+  // 地図表示のためのリンクを作成
+  var link = "http://maps.google.com/maps?q=" + 
+             lat + "," + lng;
+  $("#info").innerHTML = "<a href='" + link + "'>" +
+                         "地図を表示</a>";
+}
+// (2)位置情報の取得に失敗したときのコールバック関数
+function errorCallback(error) {
+  alert("エラー:" + error.message);
+}
+// (3)位置情報の取得を実行。
+navigator.geolocation.getCurrentPosition(
+  successCallback, errorCallback);
+function $(q) { return document.querySelector(q); }
+</script>

@@ -1,0 +1,23 @@
+<!DOCTYPE html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<script src="http://code.jquery.com/jquery-1.8.2.min.js"
+       type="text/javascript"></script>
+<style> * { margin:0; padding:0; } p { padding: 4px; } </style>
+<div id="disp"></div>
+<script type="text/javascript">
+  // 写真一覧情報をサーバーから読み込む
+  $.get("photoinfo.json", function (info) {
+    if (typeof(info) == "string") {
+      info = JSON.parse(info);
+    }
+    // 情報を元に各写真を表示する
+    for (var i in info) {
+      var photo = info[i];
+      // 要素を生成する
+      var img = $("<img>").attr("src", photo["url"]);
+      var p   = $("<p>").text(photo["memo"]);
+      // 生成した要素を追加する
+      $("#disp").append(p).append(img);
+    }
+  });
+</script>

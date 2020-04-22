@@ -1,0 +1,162 @@
+  <!DOCTYPE html>
+  <html manifest="blackjack.appcache">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+     content="width=320,user-scalable=no">
+  <title>ブラックジャック</title>
+  <link rel="stylesheet" type="text/css" href="blackjack.css">
+</head><body style="text-align:center;">
+  <p id="title"><img src="title.png"></p>
+  <div id="deck">
+    <div class="tt">相手の手札</div>
+    <div id="deck2"></div>
+    <div class="tt">自分の手札</div>
+    <div id="deck1"></div>
+    <div id="gameButtons">
+      <button onclick="hit()">もう一枚</button>
+      <button onclick="stand()">これで勝負</button>
+    </div>
+    <div id="newButtons" class="tt">
+      <div id="msg" class="res"></div>
+      <button onclick="startGame()">新規ゲーム</button>
+    </div>
+  </div>
+<script type="text/javascript">
+// 定数の宣言
+// カードの表示に関する情報
+var markImage = ["hearts.png","diamonds.png",
+                "clubs.png","spades.png"];
+var cardNoStr = ["A","2","3","4","5","6","7","8","9","10",
+                "J","Q","K"];
+var cardPoint = [11,2,3,4,5,6,7,8,9,10,10,10,10];
+// ゲームで利用する変数
+var cards = [];
+var deck1 = [], deck2 = []; // プレイヤーと相手の手札
+window.onload = function () {
+  startGame();
+};
+function startGame() {
+  $show("gameButtons");
+  $hide("newButtons");
+  $("msg").innerHTML = "";
+  shuffleCard();
+  // 自分の手札二枚を取る
+  deck1 = [];
+  deck1.push(cards.shift());
+  deck1.push(cards.shift());
+  // 相手の手札二枚を取る
+  deck2 = [];
+  deck2.push(cards.shift());
+  deck2.push(cards.shift());
+  // 先にコンピューターが考える
+  while (true) {
+    if (!drawComputer()) break;
+  }
+  showDeck();
+  // 手札の内容を表示
+  showDeck();
+}
+function shuffleCard() {
+  // カードを作成する
+  cards = [];
+  for (var i = 0; i < 52; i++) cards[i] = i;
+  // シャッフルする
+  for (var i = 0; i < 52; i++) {
+    var r = Math.floor(Math.random() * 52);
+    var tmp = cards[r];
+    cards[r] = cards[i];
+    cards[i] = tmp;
+  }
+}
+// 引数numに応じたカード表示を行う
+function getCardHTML(num) {
+  // 絵柄のための準備
+  var markNo = getMark(num);
+  var markURL = markImage[markNo];
+  // 番号のための準備
+  var no = getNo(num);
+  var noLabel = cardNoStr[no];
+  // HTMLで出力する
+  return "<div class='card'>" +
+         "<img src='" + markURL + "'>" +
+         noLabel + "</div>";
+}
+// 手札を表示する
+function showDeck(isLast) {
+  // 自分の手札を表示
+  var s = "";
+  for (var i = 0; i < deck1.length; i++) {
+    s += getCardHTML(deck1[i]);
+  }
+  $("deck1").innerHTML =  s;
+  // 相手の手札を表示
+  s = "";
+  for (var i = 0; i < deck2.length; i++) {
+    if (i == 0 || isLast) {
+      s += getCardHTML(deck2[i]);
+    } else {
+      s += "<div class='card'>?</div>";
+    }
+  }
+  $("deck2").innerHTML = s;
+}
+// 勝負判定
+function stand() {
+  showDeck(true);
+  var d1 = sumCard(deck1);
+  var d2 = sumCard(deck2);
+  if (d1 > 21) d1 = 0;
+  if (d2 > 21) d2 = 0;
+  var msg = "";
+  if (d1 == d2) {
+    msg = "引き分け";
+  } else if (d1 > d2) {
+    msg = "あなたの勝ち!";
+  } else {
+    msg = "あなたの負け";
+  }
+  if (d1 == 0) d1 = "ブタ";
+  if (d2 == 0) d2 = "ブタ";
+  $("msg").innerHTML = msg + "<br>" + d1 + " vs " + d2;
+  $hide("gameButtons");
+  $show("newButtons");
+}
+// もう一枚カードを引く
+function hit() {
+  // 自分のカードに一枚追加
+  deck1.push(cards.shift());
+  showDeck();
+  // ブタならすぐに勝負表示
+  if (sumCard(deck1) > 21) stand();
+}
+// コンピューターの思考(もう一枚引くか？)
+function drawComputer() {
+  var p = sumCard(deck2);
+  if (p >= 19) return false;
+  if ((p < 13) || (Math.random() * 20 > p)) {
+    deck2.push(cards.shift());
+    return true;
+  }
+  return false;
+}
+// カードの点数判定を行う
+function sumCard(deck) {
+  var point = 0;
+  for (var i = 0; i < deck.length; i++) {
+    point += cardPoint[getNo(deck[i])];
+  }
+  return point;
+}
+// numからカードの数字を得る
+function getNo(num) {
+  return num % 13;
+}
+// numから絵柄(マーク)を得る
+function getMark(num) {
+  return Math.floor(num / 13);
+}
+function $(id) { return document.getElementById(id); }
+function $show(id) { $(id).style.display = "block"; }
+function $hide(id) { $(id).style.display = "none"; }
+</script></body></html>

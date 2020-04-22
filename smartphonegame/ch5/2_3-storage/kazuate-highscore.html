@@ -1,0 +1,85 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=320">
+<style>
+  *  { margin:0; line-height:1.3em; text-align:center; }
+  h1 { background-color: red; color: white; }
+  #score_disp { background-color: orange; color: white; }
+  #game_area { padding: 12px; }
+  input[type="button"] { width:300px; height: 46px; }
+  #next_area { background-color:orange; padding: 10px; }
+  #score, #highscore { font-size: 2em; }
+</style>
+</head><body>
+<h1>数当てゲーム</h1>
+<div id="score_disp">
+  <p>現在スコア:<span id="score"></span>点</p>
+  <p>ハイスコア:<span id="highscore"></span>点</p>
+</div>
+<div id="game_area">
+  <p id="message">ここにメッセージ</p>
+  <div id="buttons">
+    <input id="btn1" type="button" value="1" />
+    <input id="btn2" type="button" value="2" />
+    <input id="btn3" type="button" value="3" />
+  </div>
+</div>
+<div id="next_area">
+  <input id="next_button" type="button" value="次へ"/>
+</div>
+<script type="text/javascript">
+// 変数の設定
+var answer; // 答えの番号を覚えておく
+// HTMLを読み込んだ時のイベント
+window.onload = function () {
+  // ボタンのイベントを設定
+  $("btn1").onclick = answer_clickHandler;
+  $("btn2").onclick = answer_clickHandler;
+  $("btn3").onclick = answer_clickHandler;
+  $("next_button").onclick = makeQuestion;
+  // スコアを初期化する
+  if (sessionStorage.socre == undefined) {
+    sessionStorage.score = 0;
+  }
+  if (localStorage.highscore == undefined) {
+    localStorage.highscore = 0;
+  }
+  // 問題の出題
+  makeQuestion();
+};
+// スコアの表示
+function showScore() {
+  $("score").innerHTML = sessionStorage.score;
+  $("highscore").innerHTML = localStorage.highscore;
+}
+// 問題の出題
+function makeQuestion() {
+  showScore(); // 現在のスコアを表示
+  answer = Math.floor(Math.random() * 3) + 1;
+  $("message").innerHTML = "さぁ、何番でしょうか?";
+  $show("buttons");
+  $hide("next_area");
+}
+// 問題の答え合わせ
+function answer_clickHandler(e) {
+  // どのボタンを押したか
+  var user = e.target.value;
+  if (user == answer) { // 当たり
+    $("message").innerHTML = "当たり!!";
+    sessionStorage.score++; // スコア更新
+    // ハイスコアを更新するか?
+    if (localStorage.highscore < sessionStorage.score) {
+      localStorage.highscore = sessionStorage.score;
+    }
+    showScore(); // 現在のスコアを表示
+  } else { // はずれ
+    $("message").innerHTML = "はずれ...ゲームオーバー";
+    sessionStorage.score = 0;
+  }
+  $hide("buttons");
+  $show("next_area");
+}
+function $(id) { return document.getElementById(id); }
+function $show(id) { $(id).style.display = "block"; }
+function $hide(id) { $(id).style.display = "none"; }
+</script>
+</body></html>

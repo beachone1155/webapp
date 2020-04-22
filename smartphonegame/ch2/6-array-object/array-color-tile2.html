@@ -1,0 +1,18 @@
+<!DOCTYPE html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<script type="text/javascript">
+  document.write('<div style="font-size:20px;"><code>');
+  // 色を設定する
+  var chars = ["Oo", "▲", "oO"];
+  var colors = ["red","white","blue","green"];
+  // 順に四角形を表示する
+  for (var i = 0; i < 200; i++) {
+    var col = colors[i % colors.length]; // --- (*1) 色番号の取り出し
+    var ch  = chars[i % chars.length];   // --- (*2) 文字の取り出し
+    document.write("<span style='color:" + col + "'>");
+    document.write(ch);
+    document.write("</span>\n");
+    if (i % 8 == 7) document.write("<br>");
+  }
+  document.write('</code></div>');
+</script>

@@ -1,0 +1,17 @@
+<!DOCTYPE html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<style> button { width:150px; } </style>
+<script type="text/javascript">
+  // 1から10の中であたりを決める
+  var value = Math.floor(Math.random() * 10) + 1;
+  // ボタンを10個作る
+  for (var i = 1; i <= 10; i++) {
+    if (i == value) {
+      document.write("<button onclick='alert(\"あたり\")'>" +
+                     i + "</button>");
+    } else {
+      document.write("<button onclick='alert(\"はずれ\")'>" +
+                     i + "</button>");
+    }
+  }
+</script>

@@ -1,0 +1,15 @@
+<!DOCTYPE html><html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<body>
+  <!-- メッセージとボタン -->
+  <div id="msg">そこには猫が一匹いました。</div>
+  <div><button onclick="tataku_click()">叩く</button></div>
+  <!-- スクリプト -->
+  <script type="text/javascript">
+    // ボタンを押した時に実行する処理
+    function tataku_click() {
+      var msg = document.getElementById("msg");
+      msg.innerHTML = "猫はすぐ逃げてしまいました!!";
+    }
+  </script>
+</body></html>

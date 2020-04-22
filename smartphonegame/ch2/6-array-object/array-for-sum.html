@@ -1,0 +1,17 @@
+<!DOCTYPE html><meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width">
+<script type="text/javascript">
+  // 配列にデータを代入
+  var tensu = [33,45,13,43,44,56,23,52];
+  // for構文で合計を調べる
+  var goukei = 0;
+  for (var i = 0; i < tensu.length; i++) {
+    document.write( i + "番: " + tensu[i] + "点<br>" );
+    goukei = goukei + tensu[i];
+  }
+  // 合計を表示する
+  document.write("<p>合計は..." + goukei + "点</p>");
+  // 平均を表示する
+  var heikin = goukei / tensu.length;
+  document.write("<p>平均は..." + heikin + "点</p>");
+</script>

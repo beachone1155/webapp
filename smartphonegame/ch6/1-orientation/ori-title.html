@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=320">
+</head><body>
+<img src="game-title.png">
+<div id="info"></div>
+<script type="text/javascript">
+  // 端末の向きをチェック
+  var timer_id = setInterval(check, 100);
+  function check() {
+    var ori = Math.abs(window.orientation);
+    if (ori == 90) {
+      clearInterval(timer_id);
+      $("info").innerHTML = "ゲームを始めます。";
+    } else {
+      $("info").innerHTML = "端末を横向きにしてください。";
+    }
+  }
+  function $(id) { return document.getElementById(id); }
+</script>
+</body></html>
+
+

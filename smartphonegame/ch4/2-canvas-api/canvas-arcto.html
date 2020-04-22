@@ -1,0 +1,24 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head><body>
+<!-- canvas の定義 -->
+<canvas id="a_canvas" width="300" height="300"></canvas>
+<script type="text/javascript">
+  // (*1) コンテキストの取得
+  var canvas = document.getElementById("a_canvas");
+  var context = canvas.getContext("2d");
+  // (*2) パスの指定
+  context.beginPath();
+  context.moveTo(20,280);
+  var x1 = 150, y1 = 20, x2 = 280, y2 = 280;
+  context.arcTo(x1,y1, x2,y2, 40);
+  context.lineTo(x2, y2);
+  // (*3) 塗りの指定
+  context.fillStyle = "#99cc99";
+  context.fill();
+  // (*4) 枠線(輪郭)の指定
+  context.lineWidth = 9;
+  context.strokeStyle = "green";
+  context.stroke();
+</script>
+</body></html>

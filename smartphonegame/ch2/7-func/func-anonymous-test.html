@@ -1,0 +1,13 @@
+<!DOCTYPE html><meta charset="UTF-8" />
+<script type="text/javascript">
+// 関数を引数にとる関数を定義する
+function use3and5(func) {
+  return func(3, 5);
+}
+// 足し算を行う無名関数を利用して答えを得る
+var a1 = use3and5(function(a,b){ return a+b; });
+// かけ算を行う無名関数を利用して答えを得る
+var a2 = use3and5(function(a,b){ return a*5; });
+// 答えを得る
+alert("a1=" + a1 + ",a2=" + a2);
+</script>

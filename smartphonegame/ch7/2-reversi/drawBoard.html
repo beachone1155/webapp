@@ -1,0 +1,37 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <meta name="viewport"
+     content="width=320,user-scalable=no">
+  <style> * { margin:0; padding:0; } </style>
+</head><body> 
+<canvas id="aCanvas" width="320" height="320"></canvas>
+<script type="text/javascript">
+// 変数の宣言など
+var padX = 12, padY = 12; // 描画の余白
+var cellW = 37; // 一マスの幅
+var bRows = 8, bCols = 8; // ボードの列数と行数
+// コンテキストを取得
+var canvas = $("aCanvas");
+var context = canvas.getContext("2d");
+// 背景を初期化
+context.fillStyle = "green";
+context.fillRect(0, 0, 320, 320);
+// ボードのセル線を描画
+context.beginPath();
+var y1 = padY;
+var y2 = padY + bRows * cellW;
+for (var x = 0; x <= bCols; x++) {
+  var xx = x * cellW + padX;
+  context.moveTo(xx, y1);
+  context.lineTo(xx, y2);
+}
+var x1 = padX;
+var x2 = padX + bCols * cellW;
+for (var y = 0; y <= bRows; y++) {
+  var yy = y * cellW + padY;
+  context.moveTo(x1, yy);
+  context.lineTo(x2, yy);
+}
+context.strokeStyle = "white";
+context.stroke(); 
+function $(id) { return document.getElementById(id); }
+</script></body></html>

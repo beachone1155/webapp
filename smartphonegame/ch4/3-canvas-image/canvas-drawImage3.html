@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width"><body>
+<canvas id="a_canvas" width="300" height="400"></canvas>
+<script type="text/javascript">
+  var canvas = document.getElementById("a_canvas");
+  var ctx = canvas.getContext("2d");
+  // 画像を読込む --- (*1)
+  var image = new Image();
+  image.src = "waterfall.jpg";
+  // onloadイベントを記述--- (*2)
+  image.onload = function () {
+    // 等倍で描画
+    ctx.drawImage(image, 0, 0);
+    // 一部分だけ切り取って描画する
+    ctx.drawImage(image, 180, 309, 85, 85, 
+                         10,  10,  85*3, 85*3);
+  };
+</script></body></html>

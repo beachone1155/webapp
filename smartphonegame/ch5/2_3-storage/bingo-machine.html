@@ -1,0 +1,53 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <meta name="viewport"
+     content="width=320,user-scalable=no">
+  <title>ビンゴマシン</title>
+</head><body style="text-align:center;">
+  <h1>ビンゴマシン</h1>
+  <div id="number" style="font-size:70px;">*</div>
+  <div id="info" style="font-size:12px;"></div>
+  <p><button onclick="nextNumber()">番号を表示</button></p>
+  <p><button onclick="resetNumber()">リセット</button></p>
+<script type="text/javascript">
+function nextNumber() { // 次の番号を表示する
+  // ビンゴ出題番号が初期化されてない場合
+  if (localStorage.bingo == undefined) {
+    makeNumber();
+  }
+  // 番号を一つだけ取り出す
+  var bingo_json = localStorage.bingo;
+  var a = JSON.parse(bingo_json);
+  var no = a.shift();
+  // 画面に番号を表示
+  document.getElementById("number").innerHTML = no;
+  document.getElementById("info").innerHTML = 
+    "残りの個数=" + a.length;
+  // 残りを保存する
+  localStorage.bingo = JSON.stringify(a);
+  // もし残りがなければ値を削除
+  if (a.length == 0) {
+    delete localStorage.bingo;
+  }
+}
+function resetNumber() { // 番号をリセットする
+  if (!confirm("リセットしますか？")) return;
+  makeNumber();
+}
+function makeNumber() {
+  // 1から75までの数字を用意する
+  var a = [];
+  for (var i = 1; i <= 75; i++) {
+    a.push(i); // 配列に値を追加する
+  }
+  // 番号をランダムに並び替える
+  for (var i = 0; i < a.length; i++) {
+    var tmp = a[i];
+    var r = Math.floor(Math.random() * a.length);
+    a[i] = a[r];
+    a[r] = tmp;
+  }
+  // localStorageに番号を書き込む
+  localStorage.bingo = JSON.stringify(a);
+  alert("番号をリセットしました!");
+}
+</script></body></html>

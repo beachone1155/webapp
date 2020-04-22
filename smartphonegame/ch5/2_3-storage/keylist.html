@@ -1,0 +1,20 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <meta name="viewport"
+     content="width=320,user-scalable=no">
+</head><body><h1>キーの一覧を表示</h1>
+<script type="text/javascript">
+window.onload = function () {
+  // localStorageに適当なキーを突っ込む
+  localStorage.score = 1234;
+  localStorage.name = "クジラ";
+  localStorage.memo = "プログラマー";
+  // キーの一覧を表示する
+  var len = localStorage.length;
+  var result = "";
+  for (var i = 0; i < len; i++) {
+    var key = localStorage.key(i);
+    var val = localStorage[key];
+    document.write(key + "=" + val + "<br>");
+  }
+};
+</script></body></html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<title>ボタンつぶし</title>
+<style> * { padding:0; margin: 0; }
+button { width:60px; font-size:30px; padding: 8px; }
+h3 { background-color:blue; color:white; padding:8px; }
+</style>
+</head><body style="text-align:center;">
+  <h3>ボタンつぶし</h3>
+  <!-- audioの定義 -->
+  <audio id="beep"><source src="beep.mp3"></audio>
+  <!-- buttons -->
+  <div id="buttons"></div>
+<script type="text/javascript">
+// 複数のボタンを生成する
+for (var i = 0; i < 30; i++) {
+  var e = document.createElement("button");
+  e.innerHTML = "★";
+  e.onclick = button_onClick;
+  $("buttons").appendChild(e);
+}
+// サウンドの再生
+function button_onClick(e) {
+  e.target.disabled = true;
+  e.target.innerHTML = "x";
+  $("beep").play();
+}
+function $(id) { return document.getElementById(id); }
+</script></body></html>

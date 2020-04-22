@@ -1,0 +1,21 @@
+<!DOCTYPE html><html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<body>
+  <!-- メッセージとボタン -->
+  <div id="block" style="text-align:center;">
+    <h3>宝箱を見つけました！</h3>
+    <div onclick="takarabako_click()">
+      <img src="box-close.gif">
+    </div>
+  </div>
+  <!-- スクリプト -->
+  <script type="text/javascript">
+    // 宝箱を触った時にに実行する処理
+    function takarabako_click() {
+      var e = document.getElementById("block");
+      e.innerHTML = "<h3>宝箱を開けました！</h3>" +
+                    "<div><img src='box-open.gif'></div>" +
+                    "<div>・・・が空でした...</div>";
+    }
+  </script>
+</body></html>

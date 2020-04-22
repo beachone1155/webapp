@@ -1,0 +1,329 @@
+<!DOCTYPE html><html><head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+     content="width=320,user-scalable=no">
+  <title>リバーシ</title>
+  <style> * { margin:0; padding:0; } </style>
+</head><body> 
+<canvas id="aCanvas" width="320" height="320"></canvas>
+<div id="msg" style="margin:20px;"></div>
+<script type="text/javascript">
+// 変数の宣言など
+var cellColors = ["green", "black", "white"]; //コマの色
+var C_BLACK = 1, C_WHITE = 2;
+var dirTable = [ // 八方向を定義したテーブル
+  [0,-1],[1,-1],[1,0],[1,1],
+  [0,1],[-1,1],[-1,0],[-1,-1]
+];
+var pointTable = [
+  80, 0,30,20,20,20,30,80,
+   0, 0, 0, 0, 0, 0, 0, 0,
+  30, 0,40,30,30,40, 0,30,
+  20, 0,30, 0, 0,30, 0,20,
+  20, 0,30, 0, 0,30, 0,20,
+  30, 0,40,30,30,40, 0,30,
+   0, 0, 0, 0, 0, 0, 0, 0,
+  80, 0,30,20,20,30, 0,80
+];
+var padX = 12, padY = 12; // 描画の余白
+var cellW = 37; // 一マスの幅
+var bRows = 8, bCols = 8; // ボードの列数と行数
+var context;
+var cells = [];
+var sound;
+// HTMLを読み込んだときのイベント
+window.onload = function () {
+  // コンテキストの取得
+  var canvas = $("aCanvas");
+  context = canvas.getContext("2d");
+  // 効果音の読み込み
+  sound = new Audio("sound.mp3");
+  // イベントの設定
+  canvas.ontouchstart = function (e) {
+    var t = e.touches[0];
+    e.preventDefault();
+    touchHandler(t);
+  };
+  canvas.onmousedown = touchHandler;
+  // 盤面の初期化
+  initCells();
+  drawBoard();  
+};
+// 盤面の初期化
+function initCells() {
+  // 0（未配置）で初期化する
+  for (i = 0; i < bRows * bCols; i++) {
+    cells[i] = 0;
+  }
+  // コマの初期配置
+  cells[getI(3, 3)] = C_BLACK;
+  cells[getI(4, 4)] = C_BLACK;
+  cells[getI(3, 4)] = C_WHITE;
+  cells[getI(4, 3)] = C_WHITE;
+}
+// ボードの描画
+function drawBoard() {
+  // 背景を初期化
+  context.fillStyle = "green";
+  context.fillRect(0, 0, 320, 320);
+  // ボードのセル線を描画
+  context.beginPath();
+  var y1 = padY;
+  var y2 = padY + bRows * cellW;
+  for (var x = 0; x <= bCols; x++) {
+    var xx = x * cellW + padX;
+    context.moveTo(xx, y1);
+    context.lineTo(xx, y2);
+  }
+  var x1 = padX;
+  var x2 = padX + bCols * cellW;
+  for (var y = 0; y <= bRows; y++) {
+    var yy = y * cellW + padY;
+    context.moveTo(x1, yy);
+    context.lineTo(x2, yy);
+  }
+  context.strokeStyle = "white";
+  context.stroke(); 
+  // 盤面を見やすくするために点を四つ打つ
+  var pt = [[2, 2], [6, 6], [2, 6], [6, 2]];
+  for (var i = 0; i < pt.length; i++) {
+    var x = pt[i][0] * cellW + padX;
+    var y = pt[i][1] * cellW + padY;
+    drawCircle(x, y, 4, "white");
+  }
+  // 各セルを表示する
+  var r2 = cellW / 2;
+  for (var i = 0; i < cells.length; i++) {
+    var col = i % bCols;
+    var row = Math.floor(i / bCols);
+    var x = padX + col * cellW;
+    var y = padY + row * cellW;
+    var cn = cells[i];
+    if (cells[i] == 0) {
+      var cnt = canPutCell(col, row, C_BLACK);
+      if (cnt > 0) {
+        drawCircle(x+r2, y+r2, 4, "#33cc33");
+      }
+      continue;
+    }
+    var color = cellColors[cn];
+    drawCircle(x+r2, y+r2, r2-2, color);
+  }
+}
+// 円を描画するメソッド
+function drawCircle(x, y, r, color) {
+  context.beginPath();
+  context.arc(x, y, r, 0, Math.PI * 2);
+  context.fillStyle = color;
+  context.fill();
+}
+// (x, y)を表すインデックス番号を得る
+function getI(x, y) {
+  return x + y * bCols;
+}
+// ボードをタッチしたとき
+function touchHandler(t) {
+  var x = t.pageX - padX;
+  var y = t.pageY - padY;
+  var cx = Math.floor(x / cellW);
+  var cy = Math.floor(y / cellW);
+  var cnt = canPutCell(cx, cy, C_BLACK);
+  if (cnt >= 1) {
+    console.log("change=", cx, cy, "count=" + cnt);
+    putCell(cx, cy, C_BLACK);
+    drawBoard();
+    if (isFinished()) {
+      showResult(); return;
+    }
+    $("msg").innerHTML = "コンピューターの番です。";
+    setTimeout(computerTurn, 300);
+  }
+  sound.play();
+}
+// 終了判定
+function isFinished() {
+  // 残りのマスがあるか?
+  var c = 0;
+  for (var i = 0; i < cells.length; i++) {
+    if (cells[i] == 0) c++;
+  }
+  if (c == 0) { return true; }
+  // 相手も自分もパスしなければならないか？
+  var p = array_sum(countAllPoints(2, 0));
+  if (p == 0) { // 自分もパスしなければならないか？
+    p = array_sum(countAllPoints(1, 0));
+    if (p == 0) return true;
+  }
+}
+// ゲーム結果を表示する
+function showResult() {
+  var p = [0,0,0];
+  for (var i = 0; i < cells.length; i++) {
+    var ci = cells[i];
+    p[ci]++;
+  }
+  $("msg").innerHTML = "YOU=" + p[1] + ",COM=" + p[2];
+}
+// 新しいコマを配置できるか調べる
+function canPutCell(x, y, col) {
+  // 空白でなければコマを配置できない
+  if (cells[getI(x, y)] != 0) return 0;
+  var cnt = 0;
+  for (var i = 0; i < dirTable.length; i++) {
+    var tx = dirTable[i][0];
+    var ty = dirTable[i][1];
+    cnt += canPutCellLine(x + tx, y + ty, tx, ty, col);
+  }
+  return cnt;
+}
+//(x,y)を中心に(tx,ty)の方向にcol色のコマを置けるか調べる
+function canPutCellLine(x, y, tx, ty, col) {
+  var cnt = 0;
+  // 一つ向こう
+  if (x < 0 || y < 0) return 0;
+  if (x >=8 || y >=8) return 0;
+  var rcol = (col == 1) ? 2 : 1;
+  if (cells[getI(x, y)] != rcol) return 0;
+  cnt++;
+  for (;;) {
+    x += tx;
+    y += ty;
+    if (x < 0 || y < 0) return 0;
+    if (x >=8 || y >=8) return 0;
+    var ci = cells[getI(x, y)];
+    if (ci == rcol) cnt++;
+    if (ci == col) return cnt;
+    if (ci == 0) break;
+  }
+  return 0;
+}
+// コマを置く
+function putCell(x, y, col) {
+  // 空白でなければコマを配置できない
+  if (cells[getI(x, y)] != 0) return 0;
+  cells[getI(x, y)] = col;
+  var cnt = 0;
+  for (var i = 0; i < dirTable.length; i++) {
+    var tx = dirTable[i][0];
+    var ty = dirTable[i][1];
+    var cx = x + tx;
+    var cy = y + ty;
+    var pre = canPutCellLine(cx, cy, tx, ty, col);
+    if (pre > 0) {
+      cnt += putCellLine(cx, cy, tx, ty, col);
+    }
+  }
+  return cnt;
+}
+// (x, y)を中心として、(tx,ty)の方向に、col色を打つ
+function putCellLine(x, y, tx, ty, col) {
+  var cnt = 0;
+  // 一つ向こう
+  var rcol = (col == 1) ? 2 : 1;
+  if (x < 0 || y < 0) return 0;
+  if (x >=8 || y >=8) return 0;
+  cells[getI(x, y)] = col;
+  // それ以降
+  for (;;) {
+    x += tx; y += ty;
+    if (x < 0 || y < 0) return 0;
+    if (x >=8 || y >=8) return 0;
+    var ci = cells[getI(x, y)];
+    if (ci == rcol) {
+      cells[getI(x, y)] = col;
+      cnt++;
+    }
+    if (ci == col) return cnt;
+    if (ci == 0) break;
+  }
+  return 0;
+}
+// Computerの番、どこに置くか考える
+function computerTurn() {
+  // (1) すべてのセルに対してポイントを数える
+  var cs = countAllPoints(C_WHITE);
+  log_showBoard(cs);
+  // (2) どの場所が一番良いか考える
+  var maxcnt = -9999;
+  var ix = 0, iy = 0;
+  for (var y = 0; y < 8; y++) {
+    for (var x = 0; x < 8; x++) {
+      var cnt = cs[getI(x,y)];
+      if (cnt > maxcnt) {
+        ix = x, iy = y, maxcnt = cnt;
+      }
+    }
+  }
+  if (maxcnt == 0) { // 置けるところがない
+    $("msg").innerHTML = "コンピューターはパスしました。";
+    if (isFinished()) {
+      showResult(); return;
+    }
+    return;
+  }
+  putCell(ix, iy, 2);
+  drawBoard();
+  if (isFinished()) {
+    showResult(); return;
+  }
+  $("msg").innerHTML = "あなたの番です。";
+}
+// すべてのセルに対してポイントを数える
+function countAllPoints(col) {
+  var points = 0;
+  var cs = [];
+  for (var y = 0; y < 8; y++) {
+    for (var x = 0; x < 8; x++) {
+      var point = countPoint(x, y, col);
+      cs[getI(x,y)] = point;
+      points += point;
+    }
+  }
+  return cs;
+}
+// セルのポイントを数える
+function countPoint(x, y, col) {
+  var c = canPutCell(x, y, col);
+  if (c == 0) return 0;
+  var pt = c;
+  // 置く場所によりポイントをアップ
+  pt += pointTable[getI(x, y)];
+  return pt;
+}
+
+
+
+function array_sum(a) { // 一時配列の合計
+  var sum = 0;
+  for (var i in a) sum += a[i];
+  return sum;
+}
+// いくつ0以上の値があるかを調べる
+function array_countValue(a) {
+  var v = 0;
+  for (var i in a) {
+    if (a[i] > 0) v++;
+  }
+  return v;
+}
+function array_copy(a) { // 一時配列のコピー
+  var a2 = [];
+  for (var i = 0; i < a.length; i++) {
+    a2[i] = a[i];
+  }
+  return a2;
+}
+function log_showBoard(cs) {
+  var cs2 = array_copy(cs);
+  for (var y = 0; y < 8; y++) {
+    var a = cs2.splice(0, 8);
+    var r = "";
+    for (var x = 0; x < 8; x++) {
+      var s = "    " + a[x];
+      r += s.substr(s.length - 4, 4) + "|";
+    }
+    console.log(r);
+  }
+}
+function $(id) { return document.getElementById(id); }
+</script></body></html>

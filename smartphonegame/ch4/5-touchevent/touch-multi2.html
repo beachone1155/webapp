@@ -1,0 +1,34 @@
+<!DOCTYPE html><html><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=320,user-scalable=no">
+  <script type="text/javascript" 
+   src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js">
+  </script>
+  <title>Multi Touch</title>
+</head><body>
+<canvas id="a_canvas" width="300" height="300"></canvas>
+<div id="a_div"></div>
+<script type="text/javascript">
+  var a_canvas = document.getElementById("a_canvas");
+  var context = a_canvas.getContext("2d");
+  // タッチイベントを設定
+  $("#a_canvas").bind("touchstart", drawTouch);
+  $("#a_canvas").bind("touchmove",  drawTouch);
+  $("#a_canvas").bind("touchend",   clearCanvas);
+  // タッチ情報を得て表示する
+  function drawTouch(e) {
+    var ts = event.changedTouches;
+    for (var i = 0; i < ts.length; i++) {
+      var t = ts[i];
+      context.fillStyle = "red";
+      context.fillRect(t.pageX, t.pageY, 20, 20);
+    }
+    e.preventDefault(); // 縦スクロールを抑止する
+    document.getElementById("a_div").innerHTML = ts.length;
+  }
+  function clearCanvas() { // 画面を消去する
+    context.fillStyle = "white";
+    context.fillRect(0, 0, 300, 300);
+  }
+</script></body></html>
+

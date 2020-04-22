@@ -1,0 +1,26 @@
+<!DOCTYPE html><meta charset="utf-8">
+<meta name="viewport" content="width=320">
+<script src="http://code.jquery.com/jquery-1.8.2.min.js"
+       type="text/javascript" ></script>
+<body>
+  <div style="text-align:center;">
+    <img id="gazou" width="300" height="200">
+    <button id="next_btn">次へ</button>
+  </div>
+  <script type="text/javascript">
+    var komaNo = 1;   // コマ管理変数
+    showKoma(komaNo); // とりあえず1枚目を表示
+    komaNo++;
+    // クリックするとコマ管理変数を増やしつつ画像表示
+    $("#next_btn").click(function() {
+      showKoma(komaNo);
+      komaNo++;
+      if (komaNo > 4) komaNo = 1;
+    });
+    // 画像を表示する関数
+    function showKoma(no) {
+      var imagefile = "koma" + no + ".png";
+      $("#gazou").attr("src", imagefile);
+    }
+  </script>
+</body></html>

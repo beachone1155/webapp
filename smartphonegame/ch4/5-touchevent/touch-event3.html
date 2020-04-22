@@ -1,0 +1,22 @@
+<!DOCTYPE html><html><meta charset="utf-8">
+<meta name="viewport" content="width=400px">
+<style> * { margin:0px; padding:0px; }
+   #a_div { height:200px; background-color:yellow; color:black;
+            font-size:30px; } </style>
+<body>
+<div id="a_div"></div>
+<script type="text/javascript">
+  var a_div = document.getElementById("a_div");
+  // イベントを設定
+  a_div.addEventListener("touchstart", showTouchInfo, false);
+  a_div.addEventListener("touchmove",  showTouchInfo, false);
+  // タッチ情報を得て表示する
+  function showTouchInfo(event) {
+    event.preventDefault();
+    t = event.touches[0]; // 先頭の要素について
+    a_div.innerHTML = 
+      "clientX,Y=" + t.clientX + "," + t.clientY + "<br>" +
+      "pageX,Y=" + t.pageX + "," + t.pageY + "<br>" +
+      "screenX,Y=" + t.screenX + "," + t.screenY;
+  }
+</script></body></html>

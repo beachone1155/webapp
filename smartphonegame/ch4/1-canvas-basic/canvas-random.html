@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head><body>
+<!-- canvas の定義 -->
+<canvas id="a_canvas" width="300" height="300"></canvas>
+<script type="text/javascript">
+  // (*1) Canvas を取得
+  var canvas = document.getElementById("a_canvas");
+  // (*2) 描画用のコンテキストを取得
+  var context = canvas.getContext("2d");
+  // (*3) 定期的に描画処理を実行
+  setInterval(updateCanvas, 300);
+  // (*4) 30個ずつ図形を描画する
+  function updateCanvas() {
+    for (var i = 0; i < 30; i++) {
+      var rv = rand(0xFFFFFF); // 色をランダムに決める
+      context.fillStyle = "#" + rv.toString(16);
+      context.fillRect(rand(300), rand(300), 
+                       rand(300), rand(300));
+    }
+  }
+  function rand(range) {
+    return Math.floor(Math.random() * range);
+  }
+</script>
+</body></html>

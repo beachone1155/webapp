@@ -1,0 +1,19 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head><body>
+<!-- canvas の定義 -->
+<canvas id="a_canvas" width="300" height="300"></canvas>
+<script type="text/javascript">
+  // (*1) Canvas を取得
+  var canvas = document.getElementById("a_canvas");
+  // (*2) 描画用のコンテキストを取得
+  var context = canvas.getContext("2d");
+  // (*3) 描画処理
+  context.fillStyle = "rgb(255,0,0)"; //赤の四角
+  context.fillRect(0, 0, 150, 150);
+  context.fillStyle = "rgb(0,0,255)"; //青の四角
+  context.fillRect(150, 150, 150, 150);
+  context.fillStyle = "rgb(0,255,0)"; //緑の四角
+  context.fillRect(150, 0, 300, 150);
+</script>
+</body></html>

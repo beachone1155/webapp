@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<meta name="viewport"
+  content="width=device-width, user-scalable=no" />
+<style> * { margin:0; padding:0; }</style>
+<script type="text/javascript"
+  src="http://maps.google.com/maps/api/js?sensor=true">
+</script>
+<div id="map"></div>
+<script type="text/javascript">
+// 変数
+var lat = 35.65862127808128, lng = 139.74542051553726;
+var llv = 0.0001;
+var mZoom = 16;
+var gmap, gmaker;
+window.onload = function () {
+  // マップを画面全体に表示
+  $("map").style.width = document.width + "px";
+  $("map").style.height = document.height + "px";
+  // マップを表示
+  var mypos = new google.maps.LatLng(lat, lng);
+  var option = {
+    zoom:mZoom, center: mypos,
+    disableDefaultUI: false,
+    mapTypeId:google.maps.MapTypeId.ROADMAP };
+  gmap = new google.maps.Map($("map"), option);
+  // マーカーを表示
+  gmarker = new google.maps.Marker({
+    position: mypos, map: gmap,
+    icon: "car-icon.png"
+  });
+  // マップをクリックしたときの処理
+  google.maps.event.addListener(gmap, 'click', 
+    function (e) { moveCar(e.latLng); });
+  // センサーの値をとって車を動かす
+  var lTime = (new Date()).getTime();
+  window.addEventListener('deviceorientation',
+    function(e){
+      var cTime = (new Date()).getTime();
+      if ((cTime - lTime) < 500) return;
+      lTime = cTime;
+      var alat = lat + (e.gamma / 40) * llv;
+      var alng = lng + (e.beta  / 40) * llv;
+      var ll = new google.maps.LatLng(alat, alng);
+      moveCar(ll);
+    });
+};
+// 車を移動する
+function moveCar(latLng) {
+  gmap.setCenter(latLng);
+  gmarker.setPosition(latLng);
+  gmap.setZoom(mZoom);
+  lat = latLng.lat();
+  lng = latLng.lng();
+  console.log("move", lat, lng);
+}
+function $(id){ return document.getElementById(id); }
+</script>
+

@@ -1,0 +1,22 @@
+<!DOCTYPE html><html><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=320,user-scalable=no">
+</head><body>
+<h1>訪問カウンタ</h1>
+
+<div id="cnt">*</div>
+<script type="text/javascript">
+window.onload = function () {
+  // localStorageからカウンタを読み出す
+  var c = localStorage.counter;
+  if (c == undefined) c = 0;
+  // カウンタを加算する
+  c++;
+  // 値を表示する
+  document.getElementById("cnt").innerHTML = c;
+  // ストレージに値を保存する
+  localStorage.counter = c;
+};
+</script>
+
+</body></html>

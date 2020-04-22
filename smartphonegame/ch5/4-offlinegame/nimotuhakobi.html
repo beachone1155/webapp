@@ -1,0 +1,156 @@
+<!DOCTYPE html><html manifest="nimotuhakobi.appcache">
+<head><meta charset="UTF-8">
+<meta name="viewport"
+   content="width=320,user-scalable=no">
+<title>荷物運びパズル</title>
+<script type="text/javascript" src="stage-data.js"></script>
+<style> * { margin:0; padding:0; } </style>
+</head><body>
+  <canvas id="aCanvas" width="320" height="320"></canvas>
+  <p><button onclick="restart()">リセット</button></p>
+<script type="text/javascript">
+// ゲームに関連する定数
+var blockW = 20;          // チップ画像の横幅(ピクセル)
+var padX = 10, padY = 10; // 画面の左側と上側の余白
+var stageCols = 15;       // ステージの列数
+var stageRows = 15;       // ステージの行数
+// 各チップの画像URL
+var imageURLs = ["0-tile.png","1-block.png","2-man.png",
+                 "3-box.png","4-goal.png","5-ok.png"];
+// チップ番号を分かりやすく変数で定義したもの
+var nTile=0, nBlock=1, nPlayer=2, nBox=3, nGoal=4, nOK=5;
+// 変数の一覧
+var images = [];             // Imageオブジェクトの配列
+var context;                 // 描画用コンテキスト
+var backImage = new Image(); // 背景Imageオブジェクト
+var loadedCount = 0;         // 読み込んだ画像の数を管理
+var stage = [];              // ステージデータの配列
+var playerX, playerY, boxCount;// プレイヤーの位置など
+// 初期化イベント
+window.onload = function () {
+  // コンテキストの取得
+  var canvas = $("aCanvas");
+  context = canvas.getContext("2d");
+  // イベントの設定
+  canvas.ontouchstart = function (e) {
+    e.preventDefault();
+    var t = e.touches[0];
+    touchXY(t.pageX, t.pageY);
+  };
+  canvas.onmousedown = function (e) {
+    e.preventDefault();
+    touchXY(e.pageX, e.pageY);
+  };
+  // 背景の読込み
+  backImage.onload = checkImage;
+  backImage.src = "back.png";
+  // チップ画像の読込み
+  for (var i = 0; i <= 5; i++) {
+    images[i] = new Image();
+    images[i].onload = checkImage;
+    images[i].src = imageURLs[i];
+  }
+};
+function checkImage() {
+  loadedCount++;
+  if (loadedCount == 7) initGame();
+}
+function initGame() {
+  for (var i = 0; i < stageMaps.length; i++) {
+    stage[i] = stageMaps[i];
+  }
+  playerX = stageInfo["playerX"];
+  playerY = stageInfo["playerY"];
+  boxCount = stageInfo["boxCount"];
+  // もし前回の続きがあればロードする
+  loadData();
+  drawCanvas();
+}
+function drawCanvas() {
+  // 背景の描画
+  context.drawImage(backImage, 0, 0);
+  // マップの描画
+  for (var y = 0; y < stageRows; y++) {
+    for (var x = 0; x < stageCols; x++) {
+      var tip = stage[getI(x, y)];
+      var img = images[tip];
+      context.drawImage(img, padX + x * blockW, 
+                             padY + y * blockW);
+    }
+  }
+  // プレイヤーの描画
+  context.drawImage(images[2], padX + playerX * blockW,
+                               padY + playerY * blockW);
+}
+// 画面タッチしたとき
+function touchXY(x, y) {
+  x -= padX; y -= padY; // 余白分を減らす
+  var cx = Math.floor(x / blockW);
+  var cy = Math.floor(y / blockW);
+  var px = playerX;
+  var py = playerY;
+  // 水平方向・垂直方向どちらに動くか？
+  var tx, ty; // 移動量を表す
+  if (Math.abs(px - cx) > Math.abs(py - cy)) {
+    ty = 0;
+    tx = (px > cx) ? -1 : 1;
+    px += tx;
+  } else {
+    tx = 0;
+    ty = (py > cy) ? -1 : 1;
+    py += ty;
+  }
+  // 移動可能かチェック
+  var tip = stage[getI(px, py)];
+  switch (tip) {
+    case nTile: // タイルなので移動可能
+    case nGoal: // ゴールなので移動可能
+      playerX = px;
+      playerY = py;
+      break;
+    case nBox: // 箱ならば移動可能かチェック
+      var bx = px + tx;
+      var by = py + ty;
+      var btip = stage[getI(bx,by)];
+      if (btip == nBlock) return;
+      if (btip == nTile){
+        stage[getI(bx,by)] = nBox;
+        stage[getI(px,py)] = nTile;
+      } else if(btip == nGoal) {
+        stage[getI(bx,by)] = nOK;
+        stage[getI(px,py)] = nTile;
+        boxCount--;
+        if (boxCount <= 0) {
+          setTimeout(function(){
+            alert("ゲームクリア");
+            restart();
+          },300);
+        }
+      }
+      playerX = px;
+      playerY = py;
+      break;
+  }
+  saveData();   // データの保存
+  drawCanvas(); // 画面描画
+}
+function saveData() {
+  localStorage.stage = JSON.stringify(stage);
+  localStorage.playerX = playerX;
+  localStorage.playerY = playerY;
+  localStorage.boxCount = boxCount;
+}
+function loadData() {
+  if (localStorage.stage == undefined) return;
+  stage = JSON.parse(localStorage.stage);
+  playerX = parseInt(localStorage.playerX);
+  playerY = parseInt(localStorage.playerY);
+  boxCount = parseInt(localStorage.boxCount);
+}
+function restart() {
+  delete localStorage.stage;
+  initGame();
+}
+function getI(x, y) { return y * stageCols + x; }
+function $(id) { return document.getElementById(id); }
+</script></body></html>

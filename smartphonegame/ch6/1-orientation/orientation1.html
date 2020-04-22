@@ -1,0 +1,14 @@
+<!DOCTYPE html><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<style>div{font-size:70px;text-align:center;}</style>
+<div id="info"></div>
+<script type="text/javascript">
+  var info = document.getElementById("info");
+  setInterval(function(){ // 定期的に向きを監視
+    if (Math.abs(window.orientation) == 90) {
+      info.innerHTML = "←横→";
+    } else {
+      info.innerHTML = "↑縦↓";
+    }
+  },300);
+</script>

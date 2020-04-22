@@ -1,0 +1,16 @@
+<!DOCTYPE html><html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width"><body>
+<canvas id="a_canvas" width="300" height="400"></canvas>
+<script type="text/javascript">
+  // コンテキストを取得する --- (*1)
+  var canvas = document.getElementById("a_canvas");
+  var ctx = canvas.getContext("2d");
+  // 画像を読込む --- (*2)
+  var image = new Image();
+  image.src = "waterfall.jpg";
+  // onloadイベントを記述--- (*3)
+  image.onload = function () {
+    // 画像の読み込みが完了したときCanvasに描画
+    ctx.drawImage(image, 0, 0);
+  };
+</script></body></html>

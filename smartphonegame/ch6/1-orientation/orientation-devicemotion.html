@@ -1,0 +1,28 @@
+<!DOCTYPE html><meta charset="UTF-8">
+<meta name="viewport" content="width=320">
+<style> * { margin:0; padding:0; } </style>
+<div id="info"></div>
+<canvas id="aCanvas" width="320" height="250"></canvas>
+<script type="text/javascript">
+  var context = $("aCanvas").getContext("2d");
+  var x = 160, y = 120, col = 0xFF0000;
+  // イベントの登録
+  window.addEventListener('deviceorientation', f_devori);
+  function f_devori(e) {
+    x = (x + e.gamma / 2) % 320;
+    y = (y + e.beta / 3) % 250;
+    col = (col + 10) % 0xFFFFFF;
+    var r = 10;
+    context.beginPath();
+    context.fillStyle = "#" + col.toString(16);
+    context.arc(x, y, r, 0, 2 * Math.PI);
+    context.fill();
+    $("info").innerHTML = 
+      "alpha:" + e.alpha + "<br/>" +
+      "gamma:" + e.gamma + "<br/>" +
+      "beta:" + e.beta;
+  }
+  function $(id) { return document.getElementById(id); }
+</script>
+
+

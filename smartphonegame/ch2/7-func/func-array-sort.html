@@ -1,0 +1,18 @@
+<!DOCTYPE html><meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width">
+<script type="text/javascript">
+// カードの定義
+var cards = [
+    { mark: "spade", no:4 },
+    { mark: "heart", no:1 },
+    { mark: "clubs", no:8 },
+    { mark: "diamond", no:3 }
+];
+// 並び替え
+cards.sort(function(a,b){ return a.no - b.no; });
+// 結果を表示
+for (var i = 0; i < cards.length; i++) {
+  var c = cards[i];
+  document.write("<h3>" + c.mark + ":" + c.no + "</h3>");
+}
+</script>

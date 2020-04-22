@@ -1,0 +1,25 @@
+<!DOCTYPE html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<script src="http://code.jquery.com/jquery-1.8.2.min.js"
+       type="text/javascript"></script>
+<body>
+  <h3>AVGのワンシーン</h3>
+  <div id="msg">
+    どこまでも続く青い海。<br>気持ちの良い青い空。<br>
+    <img src="umi.jpg">
+  </div>
+  <div><button id="btn">浜辺を歩く</button></div>
+  <script type="text/javascript">
+    // ボタンを押したときのイベントを設定
+    $("#btn").click( talk_click );
+    // ボタンが押された時に実行される関数
+    function talk_click() {
+      // サーバーからメッセージを読み込む
+      $.get("message.txt", function(result) {
+        // 読み込んだメッセージを差し込む
+        $("#msg").html(result);
+        $("#btn").text("先に進む");
+      });
+    }
+  </script>
+</body>

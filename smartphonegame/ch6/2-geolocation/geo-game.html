@@ -1,0 +1,80 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+</head><body>
+<h3>現在位置から一番近い施設を選んでください。</h3>
+<div id="selButtons">
+  位置情報を取得するまでしばらくお待ちください。
+</div>
+<div id="info" style="font-size:2em;"></div>
+<script type="text/javascript">
+// 選択する施設
+var points = [
+  ["東京タワー",35.65862127808128,139.74542051553726],
+  ["渋谷駅",35.65528923429618,139.704536864685],
+  ["東京ミッドタウン",35.6624972869419,139.73421376074398],
+  ["銀座駅",35.66876158133879,139.76717368597508]
+];
+var curPoint; // 現在位置を覚えておく変数
+window.onload = function () {
+  // 位置を取得する
+  navigator.geolocation.getCurrentPosition(
+    successCallback, 
+    errorCallback);
+};
+// 位置情報の取得に成功したときのコールバック関数
+function successCallback (pos) {
+  var lat = pos.coords.latitude;
+  var lng = pos.coords.longitude;
+  curPoint = ["現在位置", lat, lng];
+  makeButtons();
+}
+// 位置情報の取得に失敗したときのコールバック関数
+function errorCallback(error) {
+  alert("エラー:" + error.message);
+}
+// 選択肢のボタンを表示する
+function makeButtons() {
+  var buttons = $("selButtons");
+  buttons.innerHTML = "";
+  for (var i = 0; i < points.length; i++) {
+    var e = points[i];
+    var btn = document.createElement("button");
+    btn.innerHTML = e[0];
+    btn.tag = i;
+    btn.onclick = answer_clickHandler;
+    btn.style.width = "300px";
+    buttons.appendChild(btn);
+  }
+}
+// 選択肢をクリックしたとき
+function answer_clickHandler(e) {
+  var tag = e.target.tag;
+  var user = points[tag];
+  var uLat = Math.abs(curPoint[1]);
+  var uLng = Math.abs(curPoint[2]);
+  var min = 999, minI = -1;
+  for (var i = 0; i < points.length; i++) {
+    var pLat = points[i][1];
+    var pLng = points[i][2];
+    var dist = Math.abs(pLat - uLat) +
+               Math.abs(pLng - uLng);
+    console.log(points[i][0], dist);
+    if (min > dist) {
+      min = dist;
+      minI = i;
+    }
+  }    
+  var msg = "";
+  if (tag == minI) {
+    msg = "あたり！";
+  } else {
+    msg = "はずれ...";
+  }
+  $("info").innerHTML = msg;
+}
+
+function $(id) { return document.getElementById(id); }
+</script></body></html>
+
+

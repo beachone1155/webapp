@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<meta name="viewport"
+  content="width=device-width, user-scalable=no" />
+<meta charset="UTF-8">
+<style> * { margin:0; padding:0; }</style>
+<script type="text/javascript"
+  src="http://maps.google.com/maps/api/js?sensor=true">
+</script>
+<div id="map"></div>
+<script type="text/javascript">
+// 変数
+// 東京タワーの緯度経度
+var lat = 35.65862127808128, lng = 139.74542051553726;
+// 六本木ヒルズの緯度経度
+var glat = 35.660452, glng = 139.729099;
+var gmap, gmaker;
+var timerId = 0;
+var llv = 0.00001; // 怪獣の移動距離
+window.onload = function () {
+  // マップを画面全体に表示
+  $("map").style.width = document.width + "px";
+  $("map").style.height = document.height + "px";
+  // マップを表示
+  var startPos = new google.maps.LatLng(lat, lng);
+  var option = {
+    zoom: 18,
+    center: startPos,
+    mapTypeId:google.maps.MapTypeId.ROADMAP };
+  gmap = new google.maps.Map($("map"), option);
+  // マーカーを表示
+  gmarker = new google.maps.Marker({
+    position: startPos, map: gmap,
+    icon: "gozilla-icon.png"
+  });
+  // タイマーを仕掛ける
+  timerId = setInterval(walk, 500);
+};
+// 怪獣を動かす
+function walk() {
+  // 座標を移動する
+  lat += (glat - lat < 0) ? -llv : llv;
+  lng += (glng - lng < 0) ? -llv : llv;
+  moveGozilla(lat, lng);
+  // 散歩終了か判定する
+  if ( (Math.abs(glat - lat) <= llv) && 
+       (Math.abs(glng - lng) <= llv) ) {
+    clearInterval(timerId);
+  }
+}
+// 怪獣を移動する
+function moveGozilla(lat, lng) {
+  var latLng = new google.maps.LatLng(lat, lng);
+  gmap.setCenter(latLng);
+  gmarker.setPosition(latLng);
+}
+function $(id){ return document.getElementById(id); }
+</script>
+

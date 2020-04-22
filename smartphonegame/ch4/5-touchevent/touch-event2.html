@@ -1,0 +1,14 @@
+<!DOCTYPE html><html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width"><body>
+<div id="a_div" 
+ style="width:100%; height:100px; background-color:red; "></div>
+<script type="text/javascript">
+  var a_div = document.getElementById("a_div");
+  // イベントを設定
+  a_div.addEventListener("touchstart", function(e) {
+    a_div.innerHTML = "画面に指が触れました。";
+  }, false);
+  a_div.addEventListener("touchend", function(e) {
+    a_div.innerHTML = "画面から指が離れました。";
+  }, false);
+</script></body></html>

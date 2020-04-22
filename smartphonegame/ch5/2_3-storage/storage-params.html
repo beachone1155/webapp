@@ -1,0 +1,25 @@
+<!DOCTYPE html><html><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=320,user-scalable=no">
+</head><body style="background-color:blue; color:white;">
+<p>名前:<input id="name" type="text"  /></p>
+<p>点数:<input id="score" type="text" /></p>
+<script type="text/javascript">
+window.onload = function () {
+  // テキストボックスの変更イベントを設定
+  $("name").onchange = saveHandler;
+  $("score").onchange = saveHandler;
+  // 前回の値があれば復元
+  if (localStorage.name == undefined) return;
+  $("name").value = localStorage.name;
+  $("score").value = localStorage.score;
+};
+// ストレージに値を保存
+function saveHandler() {
+  localStorage.name  = $F("name");
+  localStorage.score = $F("score");
+}
+function $(id) { return document.getElementById(id); }
+function $F(id) { return $(id).value; }
+</script>
+</body></html>

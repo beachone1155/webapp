@@ -1,0 +1,31 @@
+<!DOCTYPE html><html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<style>
+  * { text-align:center; }
+  .frame { background-color: yellow; }
+  ul { width: 280px; margin: auto; padding:0; }
+  li.num { float:left; list-style-type:none; width:50px;
+       background-color: blue; color:white; font-size:30px;
+       padding: 9px; margin:0; border: 1px solid yellow; }
+</style>
+<body>
+  <h2>スロットマシーンもどき改</h2>
+  <div class="frame">
+    <ul>
+      <li class="num">?</li><li class="num">?</li>
+      <li class="num">?</li><li class="num">?</li>
+    </ul>
+    <div style="clear:both;"></div>
+  </div>
+  <div><button onclick="start_click()">スタート</button></div>
+  <script type="text/javascript">
+    function start_click() {
+      var items = document.getElementsByTagName("li");
+      for (var i in items) {
+        var li = items[i];
+        if (li.className != "num") continue;
+        li.innerHTML =  Math.floor(Math.random() * 9);
+      }
+    }
+  </script>
+</body></html>

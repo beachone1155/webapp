@@ -1,0 +1,11 @@
+CACHE MANIFEST
+# ver1.000
+nimotuhakobi.html   # プログラム本体
+stage-data.js       # ステージデータのためのJS
+0-tile.png          # 以下、画像ファイル一式
+1-block.png         #
+2-man.png           #
+3-box.png           #
+4-goal.png          #
+5-ok.png            #
+back.png            #

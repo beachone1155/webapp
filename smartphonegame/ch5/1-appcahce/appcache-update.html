@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html manifest="appcache-update.appcache"><head>
+<link rel="stylesheet" type="text/css" href="test.css">
+<script type="text/javascript">
+window.onload = function () {
+  var appCache = window.applicationCache;
+  // オンラインならマニフェストを確認
+  if (window.navigator.onLine) {
+      appCache.update();
+  }
+  // 更新準備完了を通知するイベントを設定
+  appCache.addEventListener(
+    'updateready', function(e) {
+    if (confirm('最新版にアップデートしますか?')) {
+      appCache.swapCache();
+      window.location.reload();
+    }
+  });
+}
+</script></head><body>
+<h1>TEST</h1>
+</body></html>

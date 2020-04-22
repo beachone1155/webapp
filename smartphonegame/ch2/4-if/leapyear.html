@@ -1,0 +1,24 @@
+<!DOCTYPE html><meta charset="UTF-8" />
+<script type="text/javascript">
+  var y = prompt("うるう年か判定します。何年ですか?", 2013);
+  var isLeap = false;
+  // --- 1.西暦年が4で割り切れる年は閏年
+  if (y % 4 == 0) {
+      isLeap = true;
+      // --- 2.ただし、西暦年が100で割り切れる年は平年
+      if (y % 100 == 0) {
+          isLeap = false;
+          // --- 3.ただし、西暦年が400で割り切れる年は閏年
+          if (y % 400 == 0) {
+              isLeap = true;
+          }
+      }
+  }
+  // --- 結果を表示
+  if (isLeap) {
+      alert(y + "年は、うるう年");
+  }
+  else {
+      alert(y + "年は、平年");
+  }
+</script>

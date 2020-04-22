@@ -1,0 +1,95 @@
+<!DOCTYPE html><html><meta charset="utf-8">
+<title>モグラ叩き</title>
+<meta name="viewport" 
+   content="width=device-width,user-scalable=no">
+<style> * { padding:0; margin:0 } </style>
+<body style="background-color:#663333">
+<canvas id="g_canvas" width="320" height="320"></canvas>
+<script type="text/javascript">
+// 描画に関連する定数の設定
+var BASE_Y = 80; // 山の背景分(ピクセル数)
+var MOGU_W = 80; // モグラ画像の横幅
+var MOGU_H = 80; // モグラ画像の縦幅
+// モグラ穴の状態を定数として定義する
+var MOGURA_OFF  = 0; // モグラ不在
+var MOGURA_ON   = 1; // 穴にモグラがいる状態
+var MOGURA_HIT  = 2; // モグラが叩かれた状態
+// プログラム全体で使うグローバル変数の定義
+var mogu = [0,0,0,0,0,0,0,0,0,0,0,0]; // モグラ穴
+var backImage = new Image(); // 背景画像読み込み用
+var moguImage = new Image(); // モグラ画像の読込み用
+var hitImage  = new Image(); // 叩かれたモグラ画像用
+var context; // 描画用のコンテキスト
+// 初期化処理
+window.onload = function () {
+  // コンテキストの取得
+  var g_image = document.getElementById("g_canvas");
+  context = g_image.getContext("2d");
+  // 画像の読込み
+  backImage.src = "back.png";
+  moguImage.src = "mogura.png";
+  hitImage.src  = "mogura-hit.png";
+  // モグラ表示タイマーをセット
+  setInterval(changeMogu, 3000);
+};
+// モグラ表示パターンの変更
+function changeMogu() {
+  // モグラの出る引っ込むをランダムに決定
+  for (var i = 0; i < mogu.length; i++) {
+    if (Math.random() > 0.3) {
+      mogu[i] = MOGURA_OFF;
+    } else {
+      mogu[i] = MOGURA_ON;
+    }
+  }
+  drawScreen();
+}
+// 画面を描画する
+function drawScreen() {
+  // 背景の描画
+  context.drawImage(backImage, 0, 0);
+  // モグラの描画
+  for (var i = 0; i < mogu.length; i++) {
+    var x = (i % 4) * MOGU_W;
+    var y = BASE_Y + Math.floor(i / 4) * MOGU_H;
+    switch (mogu[i]) {
+      case MOGURA_OFF: /* モグラは穴の中 */ break;
+      case MOGURA_ON :
+        context.drawImage(moguImage, x, y);
+        break;
+      case MOGURA_HIT:
+        context.drawImage(hitImage, x, y);
+        break;
+    }
+  }
+}
+// タッチイベントの設定
+var gc = document.getElementById("g_canvas");
+gc.ontouchstart = function (e) {
+  e.preventDefault(); // デフォルト動作を無効にする
+  var t1 = e.touches[0];
+  touchHandler(t1);
+};
+// スマートフォンではない時の処理
+if (!isSmartphone()) gc.onmousedown = touchHandler;
+// タッチした時の処理
+function touchHandler(t) {
+  // タッチ座標の取得
+  var px = t.pageX, py = t.pageY;
+  // 何番目の穴を叩いてるか計算する
+  var px2 = Math.floor(px / MOGU_W);
+  var py2 = Math.floor((py - BASE_Y) / MOGU_H);
+  var no = py2 * 4 + px2;
+  console.log(px2 + "," + py2 + "=" + no);
+  // モグラを叩けたか？
+  if (mogu[no] == MOGURA_ON) {
+    mogu[no] = MOGURA_HIT; // 叩けた！
+    drawScreen();
+  }
+}
+// 簡単なiOS/Androidの検出関数
+function isSmartphone() {
+  var ua = navigator.userAgent;
+  return (ua.match(/iPhone|iPod|iPad|Android/) !== null);
+}
+</script></body></html>

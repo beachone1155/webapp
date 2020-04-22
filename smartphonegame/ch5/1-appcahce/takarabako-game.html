@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html manifest="takarabako-game.appcache"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<!-- jQueryを使う -->
+<script type="text/javascript" src="jquery-1.8.2.min.js">
+</script>
+<style> div { text-align:center; } </style>
+<script type="text/javascript">
+// 当たり番号を覚えておくための変数
+var atari;
+// jQueryの初期化イベントを記述
+jQuery(function(){ playGame(); });
+// ゲームを開始する
+function playGame() {
+  atari = Math.floor(Math.random() * 3);
+  showPage('#question');
+}
+// 指定されたidのページを表示する
+function showPage(id) {
+  $("[data-role='page']").hide();
+  $(id).show();
+}
+// ユーザーが宝箱を開けたときのイベント
+function openBox(no) {
+  if (no == atari) {
+    showPage("#atari");
+  } else {
+    showPage("#hazure");
+  }
+}
+</script></head><body>
+  <div id="question" data-role="page">
+    <h1>宝箱を一つ持ち帰ることができる</h1>
+    <img src="s-box-close.gif" onclick="openBox(0)">
+    <img src="s-box-close.gif" onclick="openBox(1)">
+    <img src="s-box-close.gif" onclick="openBox(2)">
+  </div>
+  <div id="atari" data-role="page">
+    <h1>あたり！</h1>
+    <img src="box-open-zaihou.gif"><br/>
+    <button onclick="playGame()">もう一回</button>
+  </div>
+  <div id="hazure" data-role="page">
+    <h1>はずれ</h1>
+    <img src="box-open.gif"><br/>
+    <button onclick="playGame()">もう一回</button>
+  </div>
+</body></html>

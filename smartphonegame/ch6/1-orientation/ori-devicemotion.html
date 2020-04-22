@@ -1,0 +1,30 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+</head><body>
+  <p>x:<input type="text" id="x"></p>
+  <p>y:<input type="text" id="y"></p>
+  <p>z:<input type="text" id="z"></p>
+  <p>xg:<input type="text" id="xg"></p>
+  <p>yg:<input type="text" id="yg"></p>
+  <p>zg:<input type="text" id="zg"></p>
+  <p>a:<input type="text" id="a"></p>
+  <p>b:<input type="text" id="b"></p>
+  <p>g:<input type="text" id="g"></p>
+<script type="text/javascript">
+window.addEventListener('devicemotion', function(e) {
+  var ac = e.acceleration; // 加速度
+  $("x").value = ac.x;
+  $("y").value = ac.y;
+  $("z").value = ac.z;
+  var acg = e.accelerationIncludingGravity; // 傾き重力加速度
+  $("xg").value = acg.x;
+  $("yg").value = acg.y;
+  $("zg").value = acg.z;
+  var rr = e.rotationRate; // 回転加速度
+  $("a").value = rr.alpha;
+  $("b").value = rr.beta;
+  $("g").value = rr.gamma;
+});
+function $(id) { return document.getElementById(id); }
+</script></body></html>
+

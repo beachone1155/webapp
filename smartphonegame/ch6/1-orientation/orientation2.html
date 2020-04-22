@@ -1,0 +1,14 @@
+<!DOCTYPE html><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<style>div{font-size:70px;text-align:center;}</style>
+<div id="info"></div>
+<script type="text/javascript">
+  var info = document.getElementById("info");
+  var dir_a = {"0":"↑","90":"←","-90":"→","180":"↓"};
+  setInterval(function(){ // 定期的に向きを監視
+    var ori = window.orientation;
+    var dir1 = (Math.abs(ori) == 90) ? "横" : "縦";
+    var dir2 = dir_a[ori];
+    info.innerHTML = dir1 + dir2 + ":" + ori;
+  },300);
+</script>

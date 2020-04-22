@@ -1,0 +1,17 @@
+<!DOCTYPE html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<canvas id="canvasMain" width="300" height="400"></canvas>
+<script type="text/javascript">
+  // 描画のための準備
+  var canvas = document.getElementById("canvasMain");
+  var c = canvas.getContext("2d");
+  c.strokeStyle = "#ff0000"; // 線の色を指定
+  c.width = 3;               // 線の太さを指定
+  // for構文で繰り返し描画
+  for (var i = 0; i < 60; i++) {
+    c.beginPath();
+    c.moveTo(i*5, 0);   // ← (*1)基点(x, y)座標の指定
+    c.lineTo(i*5, 400); // ← (*2)線の描画
+    c.stroke();
+  }
+</script>

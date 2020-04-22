@@ -1,0 +1,18 @@
+<!DOCTYPE html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<canvas id="a_canvas" width="300" height="300"></canvas>
+<script type="text/javascript">
+  var canvas = document.getElementById("a_canvas");
+  var context = canvas.getContext("2d");
+  // ”wŒi‚ğ“h‚è‚Â‚Ô‚·
+  context.fillStyle = "#cccccc";
+  context.fillRect(0, 0, 300, 300);
+  // (*1) ƒpƒX‚Ìw’è
+  var x = 40, y = 80, w = 210, h = 140;
+  context.rect(x, y, w, h);
+  // (*2) ˜gü(—ÖŠs)‚Ìw’è
+  context.lineWidth = 9;
+  context.strokeStyle = "blue";
+  context.stroke();
+</script>
+</body></html>

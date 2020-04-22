@@ -1,0 +1,25 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head><body>
+<!-- canvas の定義 -->
+<canvas id="a_canvas" width="300" height="300"></canvas>
+<script type="text/javascript">
+  // (*1) 青、赤、緑の色番号を定義する
+  var colors = ["#FFFFFF", "#FFFF00", "#000000", "#FFFF00"];
+  var index = 0; // 色番号を管理するインデックス変数
+  // (*2) コンテキストを取得する
+  var canvas = document.getElementById("a_canvas");
+  var context = canvas.getContext("2d");
+  // (*3) 定期的に描画処理を実行
+  setInterval(updateCanvas, 500);
+  // (*4) 画面を書き換える
+  function updateCanvas() {
+    context.fillStyle = colors[index];
+    context.fillRect(10, 10, 280, 280);
+    index = ((index + 1) % colors.length); // 色番号を変える---(*5)
+  }
+  function rand(range) {
+    return Math.floor(Math.random() * range);
+  }
+</script>
+</body></html>

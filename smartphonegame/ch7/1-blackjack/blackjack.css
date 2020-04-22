@@ -1,0 +1,37 @@
+/* ブラックジャック用CSS */
+* { padding: 0px; margin: 0px; }
+#title { height: 60px; }
+body {
+  background-color: black; color:white;
+  background-image: url(back.png);
+}
+.card {
+  background-color: white; color:black;
+  margin: 10px; padding:5px; 
+  width:70px; height:40px;
+  font-size:32px;
+  border: 1px 32solid gray; 
+  float: left;
+}
+#deck1, #deck2 {
+  background-color: black; color:white;
+}
+.card > img { width:32px; height:32px; }
+.tt {
+  background-color: black; color:white; 
+  padding: 6px; 
+  border-top: 2px solid gray;
+  clear:both;
+}
+#gameButtons {
+  background-color: black; color:white; 
+  padding: 12px; 
+  clear:both;
+}
+.res {
+  background-color: white; color:blue; padding: 6px; 
+  clear:both; font-size: 25px;
+}
+button { width: 130px; font-size:16px; }
+
+

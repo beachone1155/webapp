@@ -1,0 +1,55 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <meta name="viewport"
+     content="width=320,user-scalable=no">
+</head><body style="text-align:center;">
+  <h1>トランプめくり</h1>
+  <div id="number" style="font-size:120px;">*</div>
+  <p><button onclick="nextNumber()">番号を表示</button></p>
+  <p><button onclick="resetNumber()">シャッフル</button></p>
+<script type="text/javascript">
+var markImage = ["hearts.png","diamonds.png",
+                "clubs.png","spades.png"];
+var cardNoStr = ["A","2","3","4","5","6","7","8","9","10",
+                "J","Q","K"];
+function nextNumber() { // 次の番号を表示する
+  // ビンゴ出題番号が初期化されてない場合
+  if (localStorage.card == undefined) makeNumber();
+  // 番号を一つだけ取り出す
+  var card_json = localStorage.card;
+  var a = JSON.parse(card_json);
+  var no = a.shift();
+  // 番号の絵柄の画像を得る
+  var card_image = markImage[Math.floor(no / 13)];
+  // 番号をトランプのカードに変換
+  var card_no = cardNoStr[no % 13];
+  document.getElementById("number").innerHTML = 
+    "<img src='" + card_image + "'>" + card_no;
+  // 残りを保存する
+  localStorage.card = JSON.stringify(a);
+  // もし残りがなければ値を削除
+  if (a.length == 0) {
+    delete localStorage.card;
+  }
+}
+function resetNumber() { // 番号をリセットする
+  if (!confirm("リセットしますか？")) return;
+  makeNumber();
+}
+function makeNumber() {
+  // 52枚のカードを用意する
+  var a = [];
+  for (var i = 0; i < 52; i++) {
+    a.push(i); // 配列に値を追加
+  }
+  // 番号をランダムに並び替える
+  for (var i = 0; i < a.length; i++) {
+    var tmp = a[i];
+    var r = Math.floor(Math.random() * a.length);
+    a[i] = a[r];
+    a[r] = tmp;
+  }
+  // localStorageに番号を書き込む
+  localStorage.card = JSON.stringify(a);
+  alert("番号をリセットしました!");
+}
+</script></body></html>

@@ -1,0 +1,11 @@
+CACHE MANIFEST
+# ver.1.000
+CACHE:
+# キャッシュしたいファイルを以下に
+test.html
+test.css
+test.png
+
+NETWORK:
+# キャッシュしたくないファイルを以下に
+mycgi.php

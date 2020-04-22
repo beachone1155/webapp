@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+     content="width=device-width,initial-scale=1,user-scalable=yes">
+  <title>動画テスト</title>
+  <style>
+    body { background-color: black; color:white; 
+           text-align:center;}
+    h3 { background-color: gray; color: navy; }
+  </style>
+</head><body>
+  <h3>某某ゲーム</h3>
+  <div onclick="startGame()">
+    <img src="start-button.png" alt="ゲームをはじめる"/>
+  </div>
+  <div><div>↓↓ゲームの使い方を動画で見る↓↓</div>
+  <video controls 
+    poster="video-poster.png"
+    width="300" height="225">
+    <source src="game-op.m4v">
+  </video></div>
+  <script>
+  function startGame() { alert("ゲームを始めます。"); }
+  </script>
+</body></html>

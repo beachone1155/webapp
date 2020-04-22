@@ -1,0 +1,56 @@
+<!DOCTYPE html><meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width">
+<script type="text/javascript">
+// 変数の初期化
+var marks = ["heart","spade","clubs","diamond"];
+var cards = [];
+var players = [[],[],[],[]]; // 4人のプレイヤーの手札を表す
+
+// メイン処理部分(各処理の関数を呼び出す)
+cards = createCards();
+shuffleCards(cards);
+dealCards(cards, players, 5);
+showCards(players);
+
+// 52枚のトランプのカードを生成する
+function createCards() {
+  var cards = [];
+  for (var mark = 0; mark < 4; mark++) {
+    for (var no = 1; no <= 13; no++) {
+      var newCard = {"mark":marks[mark], "no":no};
+      cards.push(newCard); // 配列にカードを追加する
+    }
+  }
+  return cards;
+}
+// カードをシャッフルする
+function shuffleCards(cards) {
+  for (var i = 0; i < cards.length; i++) {
+    var r = Math.floor(Math.random() * cards.length);
+    var tmp = cards[r];   // r番目とi番目のカードを入れ替える
+    cards[r] = cards[i];
+    cards[i] = tmp;
+  }
+}
+// カードをプレイヤーに指定枚数だけ配る
+function dealCards(cards, players, count) {
+  for (var p = 0; p < players.length; p++) {
+    // 指定枚数だけ配る
+    for (var i = 0; i < count; i++) {
+      var c = cards.shift(); // カードを1枚引く
+      players[p].push(c);       // プレイヤーに渡す
+    }
+  }
+}
+// 各プレイヤーの手札を表示する
+function showCards(players) {
+  for (var p = 0; p < players.length; p++) {
+    document.write("<h3>" + (p+1) + "番目のプレイヤー</h3>");
+    var tehuda = players[p];
+    for (var i = 0; i < tehuda.length; i++) {
+      var card = tehuda[i];
+      document.write("<div>" + card.mark + ":" + card.no + "</div>");
+    }
+  }
+}
+</script>

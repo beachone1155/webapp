@@ -1,0 +1,10 @@
+<script>
+function hoge() {
+  return 5;
+}
+
+var result = hoge(); // 関数の実行結果を resuult に代入。 ----- (*1)
+var func = hoge;     // 関数オブジェクトを func に代入。  ----- (*2)
+
+alert(func());       // 表示結果→ 5   -------------------------(*3)
+</script>

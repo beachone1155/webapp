@@ -1,0 +1,40 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <script src="http://code.jquery.com/jquery-1.8.2.min.js"
+         type="text/javascript"></script>
+  <script type="text/javascript">
+    // jQueryの初期化イベントの定義
+    $(function(){
+      showPage(1); // ページ「p1」だけを表示する
+    });
+    // 特定の番号のついたページを表示し履歴を記録する
+    function showPage(no) {
+      history.pushState(no, null, "#p" + no); // 履歴を追加
+      changePage(no); // 画面を書き換え
+    }
+    // ページの内容を書き換える関数
+    function changePage(no) {
+      $(".page").hide();   // 全てのページを隠す
+      $("#p" + no).show(); // 特定のページを表示
+    }
+    // バックボタンが押された時を検出する
+    window.addEventListener("popstate", function(e) {
+      if (e.state == null) return;
+      var pageNo = e.state; // 状態を復元する
+      changePage(pageNo);
+    });
+  </script>
+</head><body>
+  <div id="p1" class="page">
+    <h1>p1</h1>
+    <p><button onclick="showPage(2)">ページ2へ</button></p>
+  </div>
+  <div id="p2" class="page">
+    <h1>p2</h1>
+    <p><button onclick="showPage(3)">ページ3へ</button></p>
+  </div>
+  <div id="p3" class="page">
+    <h1>p3</h1>
+    <p><button onclick="showPage(1)">ページ1へ</button></p>
+  </div>
+</body></html>

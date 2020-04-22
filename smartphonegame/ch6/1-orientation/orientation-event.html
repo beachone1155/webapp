@@ -1,0 +1,19 @@
+<!DOCTYPE html><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<style>div{font-size:70px;text-align:center;}</style>
+<div id="info"></div>
+<script type="text/javascript">
+  // デバイスの向きが変わった時に行う処理
+  var f = function () {
+    setTimeout(function(){
+      var i = document.getElementById("info");
+      i.innerHTML = "r=" + window.orientation;
+    },300);
+  };
+  // OSに応じて設定するイベントを変える
+  if (navigator.userAgent.indexOf("Android") >= 0) {
+    window.onresize = f;
+  } else {
+    window.onorientationchange = f;
+  }
+</script>

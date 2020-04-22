@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script type="text/javascript"
+  src="http://maps.google.com/maps/api/js?sensor=true">
+</script><!-- ___________(*1)-->
+<div>住所:<input id="address" type="text"/></div>
+<script type="text/javascript">
+navigator.geolocation.getCurrentPosition(
+  function(pos) { // 現在位置が取得できたとき
+    var lat = pos.coords.latitude;
+    var lng = pos.coords.longitude;
+    // 逆ジオコーディングを行う_____(*2)
+    var geocoder = new google.maps.Geocoder();
+    var latlng = new google.maps.LatLng(lat, lng);
+    geocoder.geocode({'latLng': latlng}, 
+      function (res, status) {
+        if (status != google.maps.GeocoderStatus.OK) {
+          alert("住所取得失敗: " + status); return;
+        }
+        $("address").value = res[0].formatted_address;//(*3)
+      });
+  });
+function $(id){ return document.getElementById(id); }
+</script>

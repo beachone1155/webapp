@@ -1,0 +1,46 @@
+<!DOCTYPE html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<script src="http://code.jquery.com/jquery-1.8.2.min.js"
+       type="text/javascript"></script>
+<body>
+  <h1>円→(米ドル|中国元)変換ツール</h1>
+  <p>円:
+    <input id="jpy" type="text" value="10000">
+    <input id="btn" type="button" value="計算">
+    <div id="usd" class="result"></div>
+    <div id="cny" class="result"></div>
+  </p>
+  <script type="text/javascript">
+    var rates_usd = {};
+    $("#btn").hide();
+    // Web API(JSONP)を二度連続で呼び出す
+    var api = "http://api.aoikujira.com/kawase/get.php?callback=?";
+    // 米ドル(USD)の値を呼び出す
+    $.getJSON(api,
+      {format:"jsonp2", code:"usd"},
+      function (e) {
+        rates_usd = e;
+        // 中国元(CNY)の値を呼び出す
+        $.getJSON(api,
+          {format:"jsonp2", code:"cny"},
+          function (e) {
+            rates_cny = e;
+            $("#btn").show();
+          });
+      });
+    // ボタンを押した時、レート計算をする
+    $("#btn").click(function(){
+      var jpy_rate = parseFloat(rates_usd["JPY"]);
+      var cny_rate = parseFloat(rates_cny["JPY"]);
+      // レートの換算
+      var ans_usd = parseFloat($("#jpy").val()) / jpy_rate;
+      var ans_cny = parseFloat($("#jpy").val()) / cny_rate; 
+      $("#usd").html(ans_usd + " 米ドルです");
+      $("#cny").html(ans_cny + " 中国元です");
+      // jQueryのエフェクトでかっこよく表示する
+      $("div.result").css("background-color", "#fff0f0")
+                     .css("font-size", "28px")
+                     .hide().fadeIn("slow");
+    });
+  </script>
+</body>

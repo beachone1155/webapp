@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<title>サウンドテスト</title></head><body>
+  <h3>JavaScriptで再生テスト</h3>
+  <button onclick="testSound()">JSで再生する</button>
+  <audio id="effect"
+    <source src="effect.ogg">
+    <source src="effect.mp3">
+    <source src="effect.wav">
+  </audio>
+  <script type="text/javascript">
+  function testSound() {
+    var obj = document.getElementById("effect");
+    obj.play();
+  }
+  </script>
+</body></html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html><html><meta charset="utf-8">
+<title>モグラ叩き</title>
+<meta name="viewport" 
+   content="width=device-width,user-scalable=no">
+<style> * { padding:0; margin:0 } </style>
+<body style="background-color:#663333">
+<canvas id="g_canvas" width="320" height="320"></canvas>
+
+<script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+
+  <script type="text/javascript">
+
+var count = 30;  //残り時間
+var score = 0;  //得点
+var mogura = $('#stage div');  //モグラのブロック
+var mogura1st,mogura2nd,mogura3rd,mogura4th;  //setInterval用
+ 
+//9匹のモグラの状態を配列で管理
+//0＝土の中　1＝頭を出した状態　2＝体を全て出した状態　3＝頭を出した状態  4=土の中　5=叩かれた時
+var joutai = [0,0,0,0,0,0,0,0,0]
+ 
+ 
+//土に潜っている状態のモグラをランダムで選ぶ関数
+function mogSelect(){
+  var tsuchi = [];  //配列tsuchiを作成
+  for(i=0; i<9; i++){  //9匹分処理を繰り返す
+    if(joutai[i]==0){  //joutaiが0の場合（土に潜っている場合）
+      tsuchi.push(i);  //配列tsuchiにモグラのインデックスを格納
+    }
+  }
+  tsuchi.sort(function() {  //配列tsuchiの中身をランダムに並び替え
+    return Math.random() - Math.random();
+  });
+  var leng = tsuchi.length;  //配列tsuchiのエレメント数を変数に保存
+  var num = Math.floor(Math.random()*leng);  //前述のエレメント数の中からランダムな数を１つ選び変数numに保存
+  return tsuchi[num];  //配列tsuchiの中でnum番目の値をreturnで返す
+}
+ 
+//モグラの状態から適した画像を表示させる関数
+function mogGraphic(n){
+  var dankai = joutai[n];  //該当のモグラの状態を取得
+  dankai ++;  //次の状態のグラフィックに変更したいので1を足す
+  mogura.eq(n).css({'background-position': (dankai * -200) + 'px ' + 0 + 'px'})  //モグラの画像を次の段階のものへずらす
+  joutai[n] = dankai;  //モグラの状態を１つ進めたもので上書き
+}
+ 
+//モグラを動かす関数
+function mogStart(n, speed){  //第一引数：動かすモグラの番号　　第二引数：モグラの動きの速度
+  var mogId = setInterval(function(){
+    if(joutai[n] <= 3){  //モグラの状態が3以前ならば
+      mogGraphic(n);  //mogGraphic()を実行
+    }
+    if(joutai[n] == 4){    //モグラの状態が4（飛び出して土に戻った状態）ならば
+      clearInterval(mogId);  //setIntervalを解除してモグラの動きを止める
+      joutai[n] = 0;  //モグラの状態を0（飛び出す前の状態）に変更
+    }
+    if(joutai[n] == 5){   //モグラの状態が5（叩かれた時）ならば
+      setTimeout(function(){  //0.7秒後に
+        mogura.eq(n).css({'background-position': 0 + 'px ' + 0 + 'px'})  //モグラを0のグラフィックに戻す
+        clearInterval(mogId);  //setIntervalを解除してモグラの動きを止める
+        joutai[n] = 0;  //モグラの状態を0（飛び出す前の状態）に変更
+      }, 700);
+    }
+  }, speed);
+}
+ 
+//モグラを叩いた時に実行する関数
+function attack(n){
+  if(joutai[n] != 0) {  //モグラの状態が0（飛び出す前）でなければ
+    joutai[n] = 5;  //モグラの状態を5に
+    mogura.eq(n).css({'background-position': -1000 + 'px ' + 0 + 'px'});  //モグラのグラフィックを叩かれたものへ変更
+    score += 100;    //変数scoreに100を追加
+    $("#score").text(score);    //変数scoreの値を#scoreに表示させる
+  }
+}
+ 
+//モグラをクリックした時の処理
+mogura.click(function(){
+  var index = $(this).index();  //叩いたモグラの番号を取得
+  attack(index);  //モグラの番号を引数で渡しattack()を実行
+})
+ 
+//カウントダウンスタート
+function countStart(){
+  var countId = setInterval(function(){  //1秒毎にカウントダウンの処理を繰り返す
+    if(count > 1){  //countが1より大きければ
+      count --;  //countを1減らす
+ 
+      if(count == 25) {  //残り時間が25秒の時
+        mogra2nd = setInterval(function(){
+          mogStart(mogSelect(), 600);    //0.6秒で動くモグラを1秒毎に出現させる
+        }, 1000);
+      }
+      if(count == 20) {  //残り時間が20秒の時
+        mogra3th = setInterval(function(){
+          mogStart(mogSelect(), 400);    //0.4秒で動くモグラを2秒毎に出現させる
+        }, 2000);
+      }
+      if(count == 15) {  //残り時間が15秒の時
+        mogra4th = setInterval(function(){
+          mogStart(mogSelect(), 300);    //0.3秒で動くモグラを1.2秒毎に出現させる
+        }, 1200);
+      }
+ 
+    } else {
+      count = 0;  //残り時間がなくなった場合
+      clearInterval(countId);  //カウントダウンのsetIntervalを解除して止める
+      $("#gameover").show().text("TIME OVER");  //タイムオーバーの画面を表示
+    }
+    $("#count").text(count);  //変数countに入っている残り時間の値を#countに表示させる
+  }, 1000);
+}
+ 
+//ゲームスタート
+$("#gameover").click(function(){  //#gameoverをクリックした時
+  if(count == 30){  //countが30ならば
+    $("#gameover").hide();  //#gameoverを非表示に
+    countStart();  //カウントダウンをスタート
+    mogStart(mogSelect(), 1000);  //モグラを出現させる（1回のみ）
+    mogra1st = setInterval(function(){
+      mogStart(mogSelect(), 800);  //1.5秒後からモグラを出現させる（1.5秒毎に繰り返し）
+    }, 1500);
+  }
+})
+
+</script></body></html>

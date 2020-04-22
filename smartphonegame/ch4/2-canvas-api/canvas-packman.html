@@ -1,0 +1,27 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head><body>
+<!-- canvas の定義 -->
+<canvas id="a_canvas" width="300" height="300"></canvas>
+<script type="text/javascript">
+  // (*1) コンテキストの取得
+  var canvas = document.getElementById("a_canvas");
+  var context = canvas.getContext("2d");
+  // (*2) 背景を黒くする
+  context.fillType = "black";
+  context.fillRect(0,0,300,300);
+  // (*3) パスを指定する
+  var x = 150, y = 150, r = 120;
+  context.beginPath();
+  context.arc(x, y, r, toRad(335), toRad(25), true);
+  context.lineTo(x, y);
+  context.closePath();
+  // (*4) 塗りを実行する
+  context.fillStyle = "yellow";
+  context.fill();
+  // 角度の変換(度からラジアン)
+  function toRad(deg) {
+    return  deg * Math.PI / 180;
+  }
+</script>
+</body></html>

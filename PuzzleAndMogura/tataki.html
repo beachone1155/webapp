@@ -5,7 +5,16 @@
 <style> * { padding:0; margin:0 } </style>
 <body style="background-color:#663333">
 <canvas id="g_canvas" width="320" height="320"></canvas>
+<div id="gameover">START</div>
+<div id="info">残り時間:<span id="count">30</span>　　スコア:<span id="score">0</span></div>
+
+<script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
 <script type="text/javascript">
+
+
+var count = 30;  //残り時間
+var score = 0;  //得点
+
 // 描画に関連する定数の設定
 var BASE_Y = 80; // 山の背景分(ピクセル数)
 var MOGU_W = 80; // モグラ画像の横幅
@@ -30,7 +39,16 @@ window.onload = function () {
   moguImage.src = "mogura.png";
   hitImage.src  = "mogura-hit.png";
   // モグラ表示タイマーをセット
-  setInterval(changeMogu, 3000);
+  //setInterval(changeMogu, 3000);
+
+  //ゲームスタート
+$("#gameover").click(function(){  //#gameoverをクリックした時
+  if(count == 30){  //countが30ならば
+    $("#gameover").hide();  //#gameoverを非表示に
+    countStart();  //カウントダウンをスタート
+    
+  }
+})
 };
 // モグラ表示パターンの変更
 function changeMogu() {
@@ -63,6 +81,50 @@ function drawScreen() {
     }
   }
 }
+
+//カウントダウンスタート
+function countStart(){
+  var countId = setInterval(function(){  //1秒毎にカウントダウンの処理を繰り返す
+    if(count > 1){  //countが1より大きければ
+      count --;  //countを1減らす
+
+      if(count == 30) {  //残り時間が30秒の時
+        setInterval(changeMogu, 3000);
+      }
+      if(count == 25) {  //残り時間が25秒の時
+        setInterval(changeMogu, 2500);
+      }
+      if(count == 20) {  //残り時間が20秒の時
+        setInterval(changeMogu, 2000);
+      }
+      if(count == 15) {  //残り時間が15秒の時
+        setInterval(changeMogu, 1500);
+      }
+      if(count == 10) {  //残り時間が10秒の時
+        setInterval(changeMogu, 1000);
+      }
+      if(count == 5) {  //残り時間が5秒の時
+        setInterval(changeMogu, 500);
+      }
+
+    } else {
+      count = 0;  //残り時間がなくなった場合
+      clearInterval(countId);  //カウントダウンのsetIntervalを解除して止める
+      $("#gameover").show().text("TIME OVER");  //タイムオーバーの画面を表示
+    }
+    $("#count").text(count);  //変数countに入っている残り時間の値を#countに表示させる
+  }, 1000);
+}
+/*
+///ゲームスタート
+$("#gameover").click(function(){  //#gameoverをクリックした時
+  if(count == 30){  //countが30ならば
+    $("#gameover").hide();  //#gameoverを非表示に
+    countStart();  //カウントダウンをスタート
+  }
+})
+*/
+
 // タッチイベントの設定
 var gc = document.getElementById("g_canvas");
 gc.ontouchstart = function (e) {

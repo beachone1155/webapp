@@ -2,19 +2,20 @@
 <title>15パズル</title>
 <meta name="viewport" 
    content="width=device-width">
-<style> * { padding:0; margin:0 } </style></head><body>
+<style> * { padding:0; margin:0; } </style></head><body>
 <canvas id="g_canvas" width="320" height="320"></canvas>
 <script type="text/javascript">
 // 定数の指定
-var PICTURE_URL = "KingGnuKasa.jpg"; // 写真のURL
-var BLOCK_W = 106;  // ブロックの幅
-var BLOCK_H = 106;  // ブロックの高さ
-var ROW_COUNT = 3; // 列を何枚に切るか
-var COL_COUNT = 3; // 行を何枚に切るか
-var UDRL = [[0,-1],[1,0],[0,1],[-1,0]]; // 上下左右の座標を定義
+var PICTURE_URL = "15puzzle-sea.jpg"; // 写真のURL
+var BLOCK_W = 80;  // ブロックの幅
+var BLOCK_H = 80;  // ブロックの高さ
+var ROW_COUNT = 4; // 列を何枚に切るか
+var COL_COUNT = 4; // 行を何枚に切るか
+// 上下左右の相対座標を定義したもの
+var UDRL = [[0,-1],[1,0],[0,1],[-1,0]];
 // 変数
 var g_canvas, context;
-var blocks = [];
+var blocks = []; // 各ピース(ブロック)を管理する配列変数
 // 画像の読込み
 var image = new Image();
 image.src = PICTURE_URL;
@@ -46,8 +47,9 @@ function init() {
 }
 // パズルの各ピースをシャッフルする
 function shufflePuzzle() {
-  // パズルをシャッフルする
-  var scount = 50, blank = ROW_COUNT * COL_COUNT - 1;
+  var scount = 50; // シャッフルする回数を指定
+  var blank = ROW_COUNT * COL_COUNT - 1; // 空きブロック
+  // 1回のみシャッフルを行う関数
   var shuffle = function () {
     scount--;
     if (scount <= 0) return;
@@ -83,8 +85,16 @@ function drawPuzzle() {
     } else {
       var sx = (no % COL_COUNT) * BLOCK_W;
       var sy = Math.floor(no / COL_COUNT) * BLOCK_H;
+      // 画像の一部を切り取って描画
       context.drawImage(image, sx, sy, BLOCK_W, BLOCK_H,
                                dx, dy, BLOCK_W, BLOCK_H);
+/*
+      // 画像の枠を描画
+      context.strokeStyle = "#f0f0f0";
+      context.lineWidth = "1px";
+      context.rect(dx, dy, BLOCK_W, BLOCK_H);
+      context.stroke();
+*/
     }
     
   }
@@ -93,14 +103,14 @@ function drawPuzzle() {
 function touchHandler(t) {
   // タッチ座標の取得
   var px = t.pageX, py = t.pageY;
-  // 何番目のブロックを叩いてるか計算する
+  // 何番目のピースを動かしたいのか計算する
   var px2 = Math.floor(px / BLOCK_W);
   var py2 = Math.floor(py / BLOCK_H);
   var no = getNo(px2, py2);
   // console.log(px2 + "," + py2 + "=" + no);
   // 空白ブロックなら動かせない
   if (blocks[no] == -1) return;
-  // 前後左右に動かせるブロックがあるか確認
+  // 上下左右に動かせるブロックがあるか確認
   for (var i = 0; i < UDRL.length; i++) {
     var pt = UDRL[i];
     var xx = px2 + pt[0];
@@ -124,7 +134,7 @@ function getY(no)    { return Math.floor(no / COL_COUNT); }
 // クリアしたかどうかをチェックする
 function checkClear() {
   var flag = true;
-  for (var i = 0; i < (COL_COUNT * ROW_COUNT-1); i++) {
+  for (var i = 0; i < (COL_COUNT * ROW_COUNT - 1); i++) {
     if (blocks[i] != i) { flag = false; break; }
   }
   if (flag) {

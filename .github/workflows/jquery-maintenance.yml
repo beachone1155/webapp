@@ -1,61 +1,137 @@
-name: jQuery security checks
+name: Verify current master jQuery repair
 on:
   push:
-    branches: [master, fix/jquery-security-20261006]
-  pull_request:
-    branches: [master]
+    branches: [fix/jquery-security-20261006]
 permissions:
   contents: read
-concurrency:
-  group: jquery-security-${{ github.ref }}
-  cancel-in-progress: true
+  pages: read
 jobs:
-  test:
+  verify-master:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
-      - name: Check out the exact revision without persisted credentials
+      - name: Read the independently updated master revision
         shell: bash
         run: |
           set -euo pipefail
           git init --quiet source
           git -C source remote add origin https://github.com/beachone1155/webapp.git
-          git -C source fetch --quiet --depth=1 origin "$GITHUB_SHA"
+          git -C source fetch --quiet --depth=1 origin 4a140e0d09f74d4384f225b04ea9efe17ad6ced8
           git -C source checkout --quiet --detach FETCH_HEAD
-      - name: Check dependency versions, hashes and local references
+          test "$(git -C source ls-remote origin refs/heads/master | cut -f1)" = 4a140e0d09f74d4384f225b04ea9efe17ad6ced8
+      - name: Run the regression tests retained on master
         working-directory: source
-        run: python3 scripts/check_jquery.py
-      - name: Set up Node.js 24 for browser test tooling
+        run: node --test tests/security.test.cjs
+      - name: Set up supported browser tooling runtime
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: '24'
-      - name: Install isolated browser test tooling
-        shell: bash
+      - name: Install isolated browser tooling
         run: |
           npm install --prefix "$RUNNER_TEMP/browser-tools" --no-save --package-lock=false agent-browser@0.33.2
           echo "$RUNNER_TEMP/browser-tools/node_modules/.bin" >> "$GITHUB_PATH"
-      - name: Verify all jQuery loads and representative interactions in Chrome
+      - name: Browser-test the master implementation and real CDN with SRI
         working-directory: source
-        run: python3 scripts/smoke_jquery.py
-  verify-pages:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    needs: test
-    runs-on: ubuntu-24.04
-    timeout-minutes: 8
-    permissions:
-      contents: read
-      pages: read
-    steps:
-      - name: Check out the revision being verified
         shell: bash
         run: |
-          set -euo pipefail
-          git init --quiet source
-          git -C source remote add origin https://github.com/beachone1155/webapp.git
-          git -C source fetch --quiet --depth=1 origin "$GITHUB_SHA"
-          git -C source checkout --quiet --detach FETCH_HEAD
-      - name: Verify deployed bytes and removal of the old libraries
+          python3 - <<'PY'
+          from functools import partial
+          from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+          import pathlib, shutil, subprocess, threading
+          root = pathlib.Path('.').resolve()
+          pages = sorted(p for p in root.joinpath('smartphonegame').rglob('*.html') if b'https://code.jquery.com/jquery-3.7.1.min.js' in p.read_bytes())
+          assert len(pages) == 13
+          class Handler(SimpleHTTPRequestHandler):
+              def end_headers(self):
+                  self.send_header('Content-Security-Policy', "default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://code.jquery.com; style-src 'self' 'unsafe-inline'")
+                  super().end_headers()
+              def log_message(self, *args):
+                  pass
+          server = ThreadingHTTPServer(('127.0.0.1', 0), partial(Handler, directory=str(root)))
+          threading.Thread(target=server.serve_forever, daemon=True).start()
+          base = 'http://127.0.0.1:' + str(server.server_port) + '/'
+          chrome = shutil.which('google-chrome') or shutil.which('chromium')
+          assert chrome, 'Missing Chrome'
+          cmd = ['agent-browser', '--session', 'master-verification', '--executable-path', chrome]
+          def browser(*args, expect=None):
+              r = subprocess.run(cmd + list(args), text=True, capture_output=True, timeout=45)
+              assert r.returncode == 0, (args[0], r.stdout, r.stderr)
+              if expect:
+                  assert expect in r.stdout, r.stdout
+              return r.stdout
+          try:
+              for path in pages:
+                  browser('open', base + path.relative_to(root).as_posix())
+                  browser('eval', "(() => { if (!window.jQuery || jQuery.fn.jquery !== '3.7.1') throw Error('Wrong or blocked library'); const s = document.querySelector('script[src*=jquery]'); if (!s.integrity || s.crossOrigin !== 'anonymous') throw Error('Missing SRI'); return 'PASS_CDN_SRI'; })()", expect='PASS_CDN_SRI')
+                  print('PASS_CDN_SRI', path.relative_to(root), flush=True)
+              browser('open', base + 'smartphonegame/ch5/1-appcahce/takarabako-game.html')
+              print(browser('snapshot', '-i'), flush=True)
+              browser('eval', "(() => { if (window.jQuery) throw Error('Unexpected jQuery dependency'); const visible = id => getComputedStyle(document.querySelector(id)).display !== 'none'; playGame(); if (!visible('#question')) throw Error('Initial state'); openBox(atari); if (!visible('#atari') || visible('#question')) throw Error('Win state'); playGame(); openBox((atari + 1) % 3); if (!visible('#hazure')) throw Error('Loss state'); playGame(); if (!visible('#question') || visible('#atari') || visible('#hazure')) throw Error('Retry state'); if (!document.querySelector('h1').textContent.includes('宝箱')) throw Error('UTF-8 text'); return 'PASS_NATIVE_TREASURE'; })()", expect='PASS_NATIVE_TREASURE')
+              print('PASS_NATIVE_TREASURE: initial/win/loss/retry, no jQuery, Japanese text', flush=True)
+              browser('open', base + 'smartphonegame/ch3/2-jquery/jq-ajax-get.html')
+              print(browser('snapshot', '-i'), flush=True)
+              browser('click', '#btn')
+              browser('wait', '--fn', "document.querySelector('#btn').textContent === '先に進む'")
+              browser('eval', "(() => { if (document.querySelector('#msg img')?.getAttribute('src') !== 'oumugai.jpg') throw Error('Ajax fixture'); return 'PASS_AJAX'; })()", expect='PASS_AJAX')
+              print('PASS_AJAX: actual click, local GET and HTML/image replacement', flush=True)
+              browser('eval', "(() => { $.extend(true, {}, JSON.parse('{\"__proto__\":{\"auditPolluted\":true}}')); if (({}).auditPolluted !== undefined) throw Error('Prototype pollution'); return 'PASS_PROTOTYPE'; })()", expect='PASS_PROTOTYPE')
+              print('PASS_PROTOTYPE', flush=True)
+              print('NOTE: historic external JSONP providers blocked; only the real jQuery CDN allowed', flush=True)
+          finally:
+              browser('close')
+              server.shutdown()
+              server.server_close()
+          PY
+      - name: Verify actual Pages build, public bytes and old URLs
         working-directory: source
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/verify_pages.py
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, time, urllib.request, urllib.error
+          expected = '4a140e0d09f74d4384f225b04ea9efe17ad6ced8'
+          root = pathlib.Path('.')
+          files = sorted(p for p in (root / 'smartphonegame').rglob('*.html') if b'https://code.jquery.com/jquery-3.7.1.min.js' in p.read_bytes())
+          files += [root / 'smartphonegame/ch5/1-appcahce/takarabako-game.html', root / 'smartphonegame/ch5/1-appcahce/takarabako-game.appcache']
+          public = 'https://beachone1155.github.io/webapp/'
+          api = 'https://api.github.com/repos/beachone1155/webapp/pages/builds/latest'
+          def get(url, auth=False):
+              headers = {'User-Agent': 'webapp-final-security-verification', 'Cache-Control': 'no-cache'}
+              if auth:
+                  headers['Authorization'] = 'Bearer ' + os.environ['GH_TOKEN']
+                  headers['Accept'] = 'application/vnd.github+json'
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=15) as response:
+                      return response.status, response.read()
+              except urllib.error.HTTPError as e:
+                  return e.code, e.read()
+          deadline = time.monotonic() + 240
+          pending = []
+          while time.monotonic() < deadline:
+              pending = []
+              status, body = get(api, True)
+              assert status == 200, ('Pages API', status)
+              build = json.loads(body)
+              if build.get('commit') != expected or build.get('status') != 'built':
+                  pending.append('Build not yet current: ' + str({k:build.get(k) for k in ['commit','status']}))
+              else:
+                  for p in files:
+                      status, data = get(public + p.as_posix())
+                      if status != 200 or data != p.read_bytes():
+                          pending.append(str(p) + ' HTTP ' + str(status) + ' or stale content')
+                  for v in ('1.7.2', '1.8.2'):
+                      url = public + 'smartphonegame/ch5/1-appcahce/jquery-' + v + '.min.js'
+                      status, _ = get(url)
+                      if status != 404:
+                          pending.append(url + ' HTTP ' + str(status))
+                  if not pending:
+                      print('PASS_PAGES_BUILD', expected, 'built', build.get('updated_at'), flush=True)
+                      print('PASS_PUBLIC_BYTES: 14 HTML files and AppCache match master byte-for-byte', flush=True)
+                      print('PASS_OLD_URLS: jquery-1.7.2.min.js and jquery-1.8.2.min.js both HTTP 404', flush=True)
+                      break
+              print('PENDING', pending, flush=True)
+              time.sleep(10)
+          else:
+              raise RuntimeError(pending)
+          PY

@@ -1,66 +1,103 @@
-name: jQuery maintenance audit
+name: jQuery maintenance repair
 on:
   push:
     branches: [fix/jquery-security-20261006]
 permissions:
-  contents: read
-  pages: read
+  contents: write
 jobs:
-  audit:
+  repair:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
-      - name: Inspect legacy references and public Pages
+      - name: Check out the exact repair revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/fix/jquery-security-20261006
+          git clone --quiet https://github.com/beachone1155/webapp.git source
+          git -C source checkout --quiet "$GITHUB_SHA"
+      - name: Confirm the guard rejects the vulnerable baseline
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python3 scripts/check_jquery.py; then
+            echo 'Expected the pre-fix dependency check to fail' >&2
+            exit 1
+          fi
+          echo 'PASS: regression guard rejects the vulnerable baseline'
+      - name: Replace only dependency bytes and remove superseded libraries
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, hashlib, io, json, os, pathlib, tarfile, urllib.request
+          root = pathlib.Path('.').resolve()
+          samples = root / 'smartphonegame'
+          def download(url):
+              with urllib.request.urlopen(url, timeout=30) as response:
+                  return response.read()
+          data = download('https://code.jquery.com/jquery-3.7.1.min.js')
+          digest = base64.b64encode(hashlib.sha256(data).digest()).decode()
+          assert digest == '/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=', digest
+          with tarfile.open(fileobj=io.BytesIO(download('https://registry.npmjs.org/jquery/-/jquery-3.7.1.tgz')), mode='r:gz') as package:
+              assert json.load(package.extractfile('package/package.json'))['version'] == '3.7.1'
+              assert package.extractfile('package/dist/jquery.min.js').read() == data, 'CDN and npm files differ'
+              license_data = package.extractfile('package/LICENSE.txt').read()
+          vendor = samples / 'vendor/jquery-3.7.1.min.js'
+          vendor.parent.mkdir(exist_ok=True)
+          vendor.write_bytes(data)
+          (vendor.parent / 'jquery-LICENSE.txt').write_bytes(license_data)
+          old_sources = [b'http://code.jquery.com/jquery-1.8.2.min.js', b'http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js']
+          changed = []
+          for path in sorted(samples.rglob('*.html')):
+              original = path.read_bytes()
+              updated = original
+              relative = os.path.relpath(vendor, path.parent).encode('ascii')
+              for old in old_sources:
+                  updated = updated.replace(old, relative)
+              if path == samples / 'ch5/1-appcahce/takarabako-game.html':
+                  updated = updated.replace(b'jquery-1.8.2.min.js', relative)
+              if updated != original:
+                  path.write_bytes(updated)
+                  changed.append(str(path.relative_to(root)))
+          assert len(changed) == 14, changed
+          manifest = samples / 'ch5/1-appcahce/takarabako-game.appcache'
+          original = manifest.read_bytes()
+          assert original.count(b'jquery-1.7.2.min.js') == 1
+          assert original.count(b'# Version.1.000') == 1
+          manifest.write_bytes(original.replace(b'jquery-1.7.2.min.js', b'../../vendor/jquery-3.7.1.min.js').replace(b'# Version.1.000', b'# Version.1.001'))
+          for version in ('1.7.2', '1.8.2'):
+              (samples / ('ch5/1-appcahce/jquery-' + version + '.min.js')).unlink()
+          print('OFFICIAL_CDN_AND_NPM_IDENTICAL', len(data), 'sha256-' + digest)
+          print('UPDATED_HTML', json.dumps(changed))
+          print('PASS: original HTML encodings and all bytes other than dependency references preserved')
+          PY
+          python3 scripts/check_jquery.py
+          git diff --check
+      - name: Install isolated browser test tooling
+        shell: bash
+        run: |
+          npm install --prefix "$RUNNER_TEMP/browser-tools" --no-save --package-lock=false agent-browser@0.33.2
+          echo "$RUNNER_TEMP/browser-tools/node_modules/.bin" >> "$GITHUB_PATH"
+      - name: Run Chrome smoke tests before publishing the repair
+        working-directory: source
+        run: python3 scripts/smoke_jquery.py
+      - name: Commit tested dependency changes to the repair branch only
+        working-directory: source
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          git clone --quiet https://github.com/beachone1155/webapp.git source
-          cd source
-          git checkout --quiet "$GITHUB_SHA"
-          python3 - <<'PY'
-          import json, os, pathlib, re, subprocess, urllib.request, urllib.error
-          paths = [pathlib.Path(p) for p in subprocess.check_output(['git','ls-files'], text=True).splitlines()]
-          count = 0
-          for p in paths:
-              if not str(p).startswith('smartphonegame/') or p.suffix.lower() not in ('.html','.js','.appcache','.json'):
-                  continue
-              text = p.read_bytes().decode('utf-8', errors='replace')
-              if p.name.startswith('jquery') and p.suffix == '.js':
-                  print('VENDORED', str(p), repr(text[:180]))
-                  continue
-              for i, line in enumerate(text.splitlines(), 1):
-                  if 'jquery' in line.lower() or re.search(r'\.(live|die|size|andSelf|load|unload|error|bind|delegate|success|complete)\s*\(|\$\.browser|\$\.parseJSON|\$\.extend|location\.(hash|search)', line):
-                      print('REFERENCE', str(p), i, line)
-              if re.search(r'<script[^>]*jquery', text, re.I):
-                  count += 1
-              if p.suffix == '.appcache':
-                  print('APPCACHE', str(p), repr(text))
-          print('JQUERY_HTML_COUNT', count)
-          def get(url, auth=False):
-              headers = {'User-Agent':'webapp-security-audit'}
-              if auth:
-                  headers.update({'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
-              try:
-                  with urllib.request.urlopen(urllib.request.Request(url,headers=headers),timeout=15) as r:
-                      return r.status, r.read().decode('utf-8',errors='replace')
-              except urllib.error.HTTPError as e:
-                  return e.code, e.read().decode('utf-8',errors='replace')
-              except Exception as e:
-                  return 'ERROR',str(e)
-          base='https://api.github.com/repos/beachone1155/webapp'
-          for suffix in ['/pages','/pages/builds/latest','/releases?per_page=100','/deployments?per_page=10','/dependabot/alerts?per_page=100']:
-              status,text=get(base+suffix,True)
-              data=json.loads(text) if text.startswith(('{','[')) else text
-              if status==200 and isinstance(data,dict) and suffix.startswith('/pages'):
-                  data={k:data.get(k) for k in ['status','html_url','cname','source','build_type','https_enforced','commit','created_at','updated_at','error'] if k in data}
-              if status==200 and isinstance(data,list):
-                  data=[{k:x.get(k) for k in ['id','number','state','sha','ref','environment','tag_name','created_at','html_url','dependency']} for x in data]
-              print('API',suffix,status,json.dumps(data,ensure_ascii=False))
-          public='https://beachone1155.github.io/webapp/'
-          for suffix in ['', 'smartphonegame/ch5/1-appcahce/takarabako-game.html','smartphonegame/ch5/1-appcahce/jquery-1.7.2.min.js','smartphonegame/ch5/1-appcahce/jquery-1.8.2.min.js','smartphonegame/ch3/2-jquery/jq-ajax-get.html','jquery-1.7.2.min.js']:
-              status,text=get(public+suffix)
-              jquery=[line.strip()[:220] for line in text.splitlines() if 'jquery' in line.lower()]
-              print('PUBLIC',public+suffix,status,repr(text[:100]),json.dumps(jquery[:2],ensure_ascii=False))
-          PY
+          test "$GITHUB_REF" = refs/heads/fix/jquery-security-20261006
+          test "$(git ls-remote origin "$GITHUB_REF" | cut -f1)" = "$GITHUB_SHA"
+          git config --local user.name 'github-actions[bot]'
+          git config --local user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add smartphonegame
+          git diff --cached --stat
+          git commit -m 'fix(security): consolidate legacy jQuery on verified 3.7.1'
+          gh auth setup-git
+          git push origin HEAD:refs/heads/fix/jquery-security-20261006
+          echo "TESTED_REPAIR_COMMIT=$(git rev-parse HEAD)"

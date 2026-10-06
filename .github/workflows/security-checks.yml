@@ -1,0 +1,25 @@
+name: Security dependency checks
+on:
+  push:
+    branches: [master, fix/dependabot-tracking-20261007]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: security-dependency-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out source without persisting credentials
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Verify dependency inventory, CDN references and legacy-library removal
+        run: |
+          node --version
+          node --test tests/*.test.cjs

@@ -1,7 +1,6 @@
 CACHE MANIFEST
-# Version.1.000
+# Version.1.001 - 2026-10-06: remove legacy jQuery
 takarabako-game.html
 s-box-close.gif
 box-open.gif
 box-open-zaihou.gif
-jquery-1.7.2.min.js

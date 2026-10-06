@@ -2,26 +2,26 @@
 <html manifest="takarabako-game.appcache"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
-<!-- jQuery‚ğg‚¤ -->
-<script type="text/javascript" src="jquery-1.8.2.min.js">
-</script>
 <style> div { text-align:center; } </style>
 <script type="text/javascript">
-// “–‚½‚è”Ô†‚ğŠo‚¦‚Ä‚¨‚­‚½‚ß‚Ì•Ï”
+// å½“ãŸã‚Šç•ªå·ã‚’è¦šãˆã¦ãŠããŸã‚ã®å¤‰æ•°
 var atari;
-// jQuery‚Ì‰Šú‰»ƒCƒxƒ“ƒg‚ğ‹Lq
-jQuery(function(){ playGame(); });
-// ƒQ[ƒ€‚ğŠJn‚·‚é
+// DOMã®æº–å‚™ãŒã§ããŸã‚‰ã‚²ãƒ¼ãƒ ã‚’é–‹å§‹ã™ã‚‹
+document.addEventListener("DOMContentLoaded", playGame);
+// ã‚²ãƒ¼ãƒ ã‚’é–‹å§‹ã™ã‚‹
 function playGame() {
   atari = Math.floor(Math.random() * 3);
   showPage('#question');
 }
-// w’è‚³‚ê‚½id‚Ìƒy[ƒW‚ğ•\¦‚·‚é
+// æŒ‡å®šã•ã‚ŒãŸidã®ãƒšãƒ¼ã‚¸ã‚’è¡¨ç¤ºã™ã‚‹
 function showPage(id) {
-  $("[data-role='page']").hide();
-  $(id).show();
+  var pages = document.querySelectorAll("[data-role='page']");
+  for (var i = 0; i < pages.length; i++) {
+    pages[i].style.display = "none";
+  }
+  document.querySelector(id).style.display = "";
 }
-// ƒ†[ƒU[‚ª•ó” ‚ğŠJ‚¯‚½‚Æ‚«‚ÌƒCƒxƒ“ƒg
+// ãƒ¦ãƒ¼ã‚¶ãƒ¼ãŒå®ç®±ã‚’é–‹ã‘ãŸã¨ãã®ã‚¤ãƒ™ãƒ³ãƒˆ
 function openBox(no) {
   if (no == atari) {
     showPage("#atari");
@@ -31,19 +31,19 @@ function openBox(no) {
 }
 </script></head><body>
   <div id="question" data-role="page">
-    <h1>•ó” ‚ğˆê‚Â‚¿‹A‚é‚±‚Æ‚ª‚Å‚«‚é</h1>
+    <h1>å®ç®±ã‚’ä¸€ã¤æŒã¡å¸°ã‚‹ã“ã¨ãŒã§ãã‚‹</h1>
     <img src="s-box-close.gif" onclick="openBox(0)">
     <img src="s-box-close.gif" onclick="openBox(1)">
     <img src="s-box-close.gif" onclick="openBox(2)">
   </div>
   <div id="atari" data-role="page">
-    <h1>‚ ‚½‚èI</h1>
+    <h1>ã‚ãŸã‚Šï¼</h1>
     <img src="box-open-zaihou.gif"><br/>
-    <button onclick="playGame()">‚à‚¤ˆê‰ñ</button>
+    <button onclick="playGame()">ã‚‚ã†ä¸€å›</button>
   </div>
   <div id="hazure" data-role="page">
-    <h1>‚Í‚¸‚ê</h1>
+    <h1>ã¯ãšã‚Œ</h1>
     <img src="box-open.gif"><br/>
-    <button onclick="playGame()">‚à‚¤ˆê‰ñ</button>
+    <button onclick="playGame()">ã‚‚ã†ä¸€å›</button>
   </div>
 </body></html>

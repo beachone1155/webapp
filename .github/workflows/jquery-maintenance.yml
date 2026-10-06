@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Inspect repository, history and public Pages
+      - name: Inspect legacy references and public Pages
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -20,59 +20,47 @@ jobs:
           cd source
           git checkout --quiet "$GITHUB_SHA"
           python3 - <<'PY'
-          import collections, json, os, pathlib, re, subprocess, urllib.request, urllib.error
-          def git(*args):
-              return subprocess.check_output(['git', *args], text=True).strip()
-          print('AUDIT_HEAD', git('rev-parse', 'HEAD'))
-          print('HISTORY', git('log', '--all', '--date=iso-strict', '--format=%h %ad %s'))
-          print('BRANCHES', git('branch', '-a'))
-          print('TAGS', git('tag', '-l'))
-          print('JQUERY_HISTORY', git('log', '--all', '--follow', '--name-status', '--format=%h %ad %s', '--date=short', '--', 'smartphonegame/ch5/1-appcahce/jquery-1.7.2.min.js'))
-          paths = [pathlib.Path(p) for p in git('ls-files').splitlines()]
-          print('TRACKED_FILES', len(paths))
-          print('AGENTS', [str(p) for p in paths if p.name == 'AGENTS.md'])
+          import json, os, pathlib, re, subprocess, urllib.request, urllib.error
+          paths = [pathlib.Path(p) for p in subprocess.check_output(['git','ls-files'], text=True).splitlines()]
+          count = 0
           for p in paths:
-              if p.suffix.lower() not in ('.html', '.js', '.appcache', '.md', '.json', '.yml'):
+              if not str(p).startswith('smartphonegame/') or p.suffix.lower() not in ('.html','.js','.appcache','.json'):
                   continue
+              text = p.read_bytes().decode('utf-8', errors='replace')
               if p.name.startswith('jquery') and p.suffix == '.js':
-                  print('VENDORED', str(p), p.read_text()[:180])
+                  print('VENDORED', str(p), repr(text[:180]))
                   continue
-              text = p.read_text(encoding='utf-8')
               for i, line in enumerate(text.splitlines(), 1):
                   if 'jquery' in line.lower() or re.search(r'\.(live|die|size|andSelf|load|unload|error|bind|delegate|success|complete)\s*\(|\$\.browser|\$\.parseJSON|\$\.extend|location\.(hash|search)', line):
                       print('REFERENCE', str(p), i, line)
+              if re.search(r'<script[^>]*jquery', text, re.I):
+                  count += 1
               if p.suffix == '.appcache':
                   print('APPCACHE', str(p), repr(text))
-          def get(url, authenticated=False):
-              headers = {'User-Agent': 'webapp-security-audit'}
-              if authenticated:
-                  headers['Authorization'] = 'Bearer ' + os.environ['GH_TOKEN']
-                  headers['Accept'] = 'application/vnd.github+json'
+          print('JQUERY_HTML_COUNT', count)
+          def get(url, auth=False):
+              headers = {'User-Agent':'webapp-security-audit'}
+              if auth:
+                  headers.update({'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
               try:
-                  with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=20) as r:
-                      data = r.read()
-                      return r.status, data.decode('utf-8', errors='replace')
+                  with urllib.request.urlopen(urllib.request.Request(url,headers=headers),timeout=15) as r:
+                      return r.status, r.read().decode('utf-8',errors='replace')
               except urllib.error.HTTPError as e:
-                  return e.code, e.read().decode('utf-8', errors='replace')
+                  return e.code, e.read().decode('utf-8',errors='replace')
               except Exception as e:
-                  return 'ERROR', str(e)
-          base = 'https://api.github.com/repos/beachone1155/webapp'
-          for suffix in ['/pages', '/pages/builds/latest', '/releases?per_page=100', '/deployments?per_page=10', '/dependabot/alerts?per_page=100']:
-              status, text = get(base + suffix, True)
-              try:
-                  data = json.loads(text)
-                  if suffix == '/pages' and isinstance(data, dict):
-                      data = {k:data.get(k) for k in ['status','html_url','cname','source','build_type','https_enforced']}
-                  elif suffix == '/pages/builds/latest' and isinstance(data, dict):
-                      data = {k:data.get(k) for k in ['status','commit','created_at','updated_at','error']}
-                  elif isinstance(data, list):
-                      data = [{k:x.get(k) for k in ['id','number','state','sha','ref','environment','tag_name','created_at','html_url','dependency','security_advisory']} for x in data]
-                  print('API', suffix, status, json.dumps(data, ensure_ascii=False))
-              except Exception:
-                  print('API', suffix, status, text[:500])
-          public = 'https://beachone1155.github.io/webapp/'
-          for suffix in ['', 'smartphonegame/ch5/1-appcahce/takarabako-game.html', 'smartphonegame/ch5/1-appcahce/jquery-1.7.2.min.js', 'smartphonegame/ch5/1-appcahce/jquery-1.8.2.min.js', 'smartphonegame/ch3/2-jquery/jq-ajax-get.html', 'jquery-1.7.2.min.js']:
-              status, text = get(public + suffix)
-              jquery = [line.strip() for line in text.splitlines() if 'jquery' in line.lower()]
-              print('PUBLIC', public + suffix, status, repr(text[:160]), json.dumps([line[:250] for line in jquery[:3]], ensure_ascii=False))
+                  return 'ERROR',str(e)
+          base='https://api.github.com/repos/beachone1155/webapp'
+          for suffix in ['/pages','/pages/builds/latest','/releases?per_page=100','/deployments?per_page=10','/dependabot/alerts?per_page=100']:
+              status,text=get(base+suffix,True)
+              data=json.loads(text) if text.startswith(('{','[')) else text
+              if status==200 and isinstance(data,dict) and suffix.startswith('/pages'):
+                  data={k:data.get(k) for k in ['status','html_url','cname','source','build_type','https_enforced','commit','created_at','updated_at','error'] if k in data}
+              if status==200 and isinstance(data,list):
+                  data=[{k:x.get(k) for k in ['id','number','state','sha','ref','environment','tag_name','created_at','html_url','dependency']} for x in data]
+              print('API',suffix,status,json.dumps(data,ensure_ascii=False))
+          public='https://beachone1155.github.io/webapp/'
+          for suffix in ['', 'smartphonegame/ch5/1-appcahce/takarabako-game.html','smartphonegame/ch5/1-appcahce/jquery-1.7.2.min.js','smartphonegame/ch5/1-appcahce/jquery-1.8.2.min.js','smartphonegame/ch3/2-jquery/jq-ajax-get.html','jquery-1.7.2.min.js']:
+              status,text=get(public+suffix)
+              jquery=[line.strip()[:220] for line in text.splitlines() if 'jquery' in line.lower()]
+              print('PUBLIC',public+suffix,status,repr(text[:100]),json.dumps(jquery[:2],ensure_ascii=False))
           PY

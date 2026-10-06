@@ -5,7 +5,6 @@ from __future__ import annotations
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import threading
@@ -59,7 +58,7 @@ def main() -> None:
         print(browser("snapshot", "-i"), flush=True)
         browser("click", "#btn")
         browser("wait", "--fn", "document.querySelector('#btn').textContent === '\u5148\u306b\u9032\u3080'")
-        browser("eval", "(() => { if (document.querySelector('#msg img')) throw Error('Ajax message was not replaced'); return 'PASS_AJAX'; })()", expect="PASS_AJAX")
+        browser("eval", "(() => { if (document.querySelector('#msg img')?.getAttribute('src') !== 'oumugai.jpg') throw Error('Ajax fixture was not rendered'); return 'PASS_AJAX'; })()", expect="PASS_AJAX")
         print("PASS Ajax example: real click, local GET and DOM replacement", flush=True)
 
         browser("eval", "(() => { const payload = JSON.parse('{\"__proto__\":{\"webappPolluted\":true}}'); $.extend(true, {}, payload); if (({}).webappPolluted !== undefined) throw Error('Prototype polluted'); return 'PASS_PROTOTYPE'; })()", expect="PASS_PROTOTYPE")
